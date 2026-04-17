@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Creator Link Hub</title>
+    <meta
+      name="description"
+      content="整合社群連結、作品圖庫、最新公告與近期商品展示的個人網站。"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Noto+Sans+TC:wght@400;500;700;900&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="page-noise"></div>
+
+    <header class="site-header">
+      <a class="brand" href="#top">
+        <span class="brand-mark">CJ</span>
+        <span class="brand-copy">
+          <strong>Creator Portal</strong>
+          <small>links, gallery, news, drops</small>
+        </span>
+      </a>
+
+      <nav class="site-nav" aria-label="主選單">
+        <a href="#links">社群連結</a>
+        <a href="#gallery">作品圖庫</a>
+        <a href="#board">布告欄</a>
+        <a href="#shop">商品展示</a>
+      </nav>
+    </header>
+
+    <main id="top">
+      <section class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow">Personal Site</p>
+          <h1>把我的作品、近況、社群和最新商品，放在同一個好看的入口。</h1>
+          <p class="hero-text">
+            這是一個給粉絲、合作方和新朋友看的首頁。你可以在這裡快速找到我的社群、瀏覽作品圖庫、查看最近公告，還有我最近上架的商品。
+          </p>
+          <div class="hero-actions">
+            <a class="button button-primary" href="#links">前往社群連結</a>
+            <a class="button button-ghost" href="#shop">看最新商品</a>
+          </div>
+        </div>
+
+        <aside class="hero-panel">
+          <div class="hero-panel-head">
+            <div>
+              <p class="panel-label">Now Showing</p>
+              <p class="hero-panel-copy">目前首頁正在展示的重點更新。</p>
+            </div>
+            <span class="headline-badge" id="headlineBadge">精選中</span>
+          </div>
+          <div class="headline-card">
+            <div class="headline-meta">
+              <span id="headlineType">最新動態</span>
+              <span id="headlineDate">--.--</span>
+            </div>
+            <strong id="headlineTitle">載入最新動態中...</strong>
+            <p id="headlineText"></p>
+          </div>
+          <div class="hero-stats" id="heroStats"></div>
+        </aside>
+
+        <div class="hero-marquee-band">
+          <div class="hero-marquee-intro">
+            <p class="eyebrow">Featured Flow</p>
+            <p class="hero-marquee-copy">隨機抽出作品，讓首頁一打開就先看見你的圖。</p>
+          </div>
+          <div class="marquee-shell" aria-label="作品跑馬燈">
+            <div class="marquee-track" id="marqueeTrack"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section-block" id="links">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Social</p>
+            <h2>所有社群連結</h2>
+          </div>
+          <p class="section-intro">把觀眾最常找的入口集中在這裡，讓人一眼就能找到你。</p>
+        </div>
+        <div class="social-grid" id="socialGrid"></div>
+      </section>
+
+      <section class="section-block" id="gallery">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Gallery</p>
+            <h2>作品圖庫</h2>
+          </div>
+          <div class="gallery-tools">
+            <div class="gallery-filters" id="galleryFilters"></div>
+          </div>
+        </div>
+        <div class="gallery-grid" id="galleryGrid"></div>
+      </section>
+
+      <section class="split-layout">
+        <section class="section-block board-section" id="board">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Board</p>
+              <h2>最近做的事與公告</h2>
+            </div>
+            <p class="section-intro">像工作室門口的布告欄，持續更新你的節奏與近況。</p>
+          </div>
+          <div class="board-list" id="boardList"></div>
+        </section>
+
+        <section class="section-block shop-section" id="shop">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Store</p>
+              <h2>最近賣的商品</h2>
+            </div>
+            <p class="section-intro">展示最近的新品、熱賣款或開放預購中的商品。</p>
+          </div>
+          <div class="shop-grid" id="shopGrid"></div>
+        </section>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <p>© <span id="yearLabel"></span> Creator Portal. Built for your brand page.</p>
+      <a href="#top">回到上方</a>
+    </footer>
+
+    <script src="./app.js"></script>
+  </body>
+</html>
