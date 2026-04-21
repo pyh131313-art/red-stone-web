@@ -86,7 +86,7 @@ const siteIconSources = [
   "./assets/fillers/rose-sign.svg",
   "./assets/fillers/mold-pillow.svg",
 ];
-const fillerVersion = "beta v2026.04.21.5";
+const fillerVersion = "beta v2026.04.21.6";
 
 const boardItems = [
   {
@@ -238,6 +238,25 @@ function getActiveFillerTemplate() {
 function getFillerPreviewScale() {
   const previewSize = fillerStage?.clientWidth || fillerStage?.getBoundingClientRect().width || fillerState.outputSize;
   return previewSize > 0 ? previewSize / fillerState.outputSize : 1;
+}
+
+function commitFillerOutputSize() {
+  if (!fillerOutputSizeInput) {
+    return fillerState.outputSize;
+  }
+
+  const rawValue = fillerOutputSizeInput.value.trim();
+  const digitsOnly = rawValue.replace(/[^\d]/g, "");
+  const nextSize = Number(digitsOnly);
+
+  if (!digitsOnly || !Number.isFinite(nextSize)) {
+    fillerOutputSizeInput.value = String(fillerState.outputSize);
+    return fillerState.outputSize;
+  }
+
+  fillerState.outputSize = Math.max(64, Math.min(4096, Math.round(nextSize)));
+  fillerOutputSizeInput.value = String(fillerState.outputSize);
+  return fillerState.outputSize;
 }
 
 function syncFillerControlLabels() {
@@ -465,13 +484,15 @@ function bindFillerControls() {
     updateFillerPreview();
   });
 
-  fillerOutputSizeInput?.addEventListener("input", () => {
-    const nextSize = Number(fillerOutputSizeInput.value);
-    fillerState.outputSize = Number.isFinite(nextSize) ? Math.max(512, Math.min(4096, nextSize)) : fillerState.outputSize;
+  fillerOutputSizeInput?.addEventListener("input", () => {});
+
+  fillerOutputSizeInput?.addEventListener("blur", () => {
+    commitFillerOutputSize();
     syncFillerControlLabels();
   });
 
-  fillerOutputSizeInput?.addEventListener("blur", () => {
+  fillerOutputSizeInput?.addEventListener("change", () => {
+    commitFillerOutputSize();
     syncFillerControlLabels();
   });
 
@@ -631,6 +652,7 @@ async function downloadFillerImage() {
   fillerDownloadButton.textContent = "匯出中...";
 
   try {
+    commitFillerOutputSize();
     const resolvedImageUrl = getTemplateImageSrc(activeTemplate);
     const image = await loadImage(resolvedImageUrl);
     const canvas = document.createElement("canvas");
@@ -639,7 +661,9 @@ async function downloadFillerImage() {
 
     const context = canvas.getContext("2d");
     const defaults = activeTemplate.defaults;
-    const fontSizePx = fillerState.fontSize;
+    const baseOutputSize = defaults.outputSize || activeTemplate.canvasWidth || 1080;
+    const exportScale = baseOutputSize > 0 ? fillerState.outputSize / baseOutputSize : 1;
+    const fontSizePx = fillerState.fontSize * exportScale;
     const maxTextWidth = canvas.width * (fillerState.width / 100);
     const centerX = canvas.width * (fillerState.x / 100);
     const centerY = canvas.height * (fillerState.y / 100);
@@ -656,7 +680,7 @@ async function downloadFillerImage() {
         imageDrawY,
         drawWidth,
         drawHeight,
-        fillerState.imageOutlineWidth,
+        fillerState.imageOutlineWidth * exportScale,
         "rgba(255,248,241,0.98)",
       );
     }
@@ -669,7 +693,7 @@ async function downloadFillerImage() {
     context.miterLimit = 2;
     context.strokeStyle = defaults.stroke;
     context.fillStyle = defaults.fill;
-    context.lineWidth = fillerState.outlineWidth;
+    context.lineWidth = fillerState.outlineWidth * exportScale;
     context.font = `${defaults.fontWeight} ${fontSizePx}px "Noto Sans TC", sans-serif`;
 
     const lines = splitTextToLines(context, fillerState.text.trim() || defaults.text, maxTextWidth);
