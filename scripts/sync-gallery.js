@@ -67,6 +67,29 @@ function buildOutputName(relativePath) {
   return `${folderSlug}-${nameSlug}-${shortHash}${parsed.ext.toLowerCase()}`;
 }
 
+function hashFileContents(filePath) {
+  const fileBuffer = fs.readFileSync(filePath);
+  return crypto.createHash("sha256").update(fileBuffer).digest("hex");
+}
+
+function uniqueImagesByContent(imageFiles) {
+  const seenHashes = new Set();
+  const uniqueFiles = [];
+
+  for (const filePath of imageFiles) {
+    const contentHash = hashFileContents(filePath);
+
+    if (seenHashes.has(contentHash)) {
+      continue;
+    }
+
+    seenHashes.add(contentHash);
+    uniqueFiles.push(filePath);
+  }
+
+  return uniqueFiles;
+}
+
 function buildGalleryItems(imageFiles) {
   ensureCleanDir(outputRoot);
 
@@ -99,16 +122,21 @@ function writeGalleryData(items) {
 
 function main() {
   const imageFiles = walkImages(sourceRoot);
+  const uniqueImageFiles = uniqueImagesByContent(imageFiles);
 
   if (imageFiles.length === 0) {
     console.log("生圖 資料夾還沒有圖片，這次先保留現有圖庫。");
     return;
   }
 
-  const galleryItems = buildGalleryItems(imageFiles);
+  const galleryItems = buildGalleryItems(uniqueImageFiles);
+  const skippedCount = imageFiles.length - uniqueImageFiles.length;
   writeGalleryData(galleryItems);
 
   console.log(`已同步 ${galleryItems.length} 張圖片到網站圖庫。`);
+  if (skippedCount > 0) {
+    console.log(`已自動略過 ${skippedCount} 張重複圖片。`);
+  }
   console.log("接下來重新整理網站確認，沒問題後再 git add / commit / push。");
 }
 
