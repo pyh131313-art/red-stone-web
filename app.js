@@ -89,6 +89,12 @@ const boardItems = [
     description: "目前壓克力牌周邊持續販售中，想購買可以直接前往商品區查看。",
   },
   {
+    type: "網站更新",
+    title: "填詞器開放測試",
+    date: "近期",
+    description: "填詞器頁面已經開放測試，現在可以先試用模板、拖曳文字和輸出圖片。",
+  },
+  {
     type: "工作近況",
     title: "近期已恢復正常更新",
     date: "近期",
@@ -112,6 +118,29 @@ const galleryGrid = document.querySelector("#galleryGrid");
 const galleryFilters = document.querySelector("#galleryFilters");
 const boardList = document.querySelector("#boardList");
 const shopGrid = document.querySelector("#shopGrid");
+const fillerTemplateList = document.querySelector("#fillerTemplateList");
+const fillerStage = document.querySelector("#fillerStage");
+const fillerPreviewArt = document.querySelector("#fillerPreviewArt");
+const fillerPreviewText = document.querySelector("#fillerPreviewText");
+const fillerTemplateName = document.querySelector("#fillerTemplateName");
+const fillerTextInput = document.querySelector("#fillerTextInput");
+const fillerImageScaleInput = document.querySelector("#fillerImageScaleInput");
+const fillerImageScaleValue = document.querySelector("#fillerImageScaleValue");
+const fillerImageOutlineWidthInput = document.querySelector("#fillerImageOutlineWidthInput");
+const fillerImageOutlineWidthValue = document.querySelector("#fillerImageOutlineWidthValue");
+const fillerFontSizeInput = document.querySelector("#fillerFontSizeInput");
+const fillerFontSizeValue = document.querySelector("#fillerFontSizeValue");
+const fillerWidthInput = document.querySelector("#fillerWidthInput");
+const fillerWidthValue = document.querySelector("#fillerWidthValue");
+const fillerLineHeightInput = document.querySelector("#fillerLineHeightInput");
+const fillerLineHeightValue = document.querySelector("#fillerLineHeightValue");
+const fillerOutlineWidthInput = document.querySelector("#fillerOutlineWidthInput");
+const fillerOutlineWidthValue = document.querySelector("#fillerOutlineWidthValue");
+const fillerOutputSizeInput = document.querySelector("#fillerOutputSizeInput");
+const fillerDownloadButton = document.querySelector("#fillerDownloadButton");
+const fillerImageOutlineToggleInput = document.querySelector("#fillerImageOutlineToggleInput");
+const fillerOutlineToggleInput = document.querySelector("#fillerOutlineToggleInput");
+const fillerResetButton = document.querySelector("#fillerResetButton");
 const headlineTitle = document.querySelector("#headlineTitle");
 const headlineText = document.querySelector("#headlineText");
 const headlineType = document.querySelector("#headlineType");
@@ -121,10 +150,31 @@ const heroStats = document.querySelector("#heroStats");
 const yearLabel = document.querySelector("#yearLabel");
 const marqueeTrack = document.querySelector("#marqueeTrack");
 const galleryItems = Array.isArray(window.galleryItems) ? window.galleryItems : [];
+const fillerTemplates = Array.isArray(window.fillerTemplates) ? window.fillerTemplates : [];
+const fillerTemplateAssets = window.fillerTemplateAssets || {};
 const preferredCategoryOrder = ["薔薇", "妮娜", "鍾馗", "黴醬", "歐妮亞", "其他", "未分類"];
+const fillerTemplateUrlCache = new Map();
 
 let activeCategory = "全部";
 let headlineIndex = 0;
+const fillerState = {
+  templateId: fillerTemplates[0]?.id || null,
+  text: "",
+  imageX: 50,
+  imageY: 50,
+  imageScale: 100,
+  imageOutlineEnabled: true,
+  imageOutlineWidth: 12,
+  x: 74,
+  y: 24,
+  width: 28,
+  fontSize: 64,
+  lineHeight: 1.18,
+  outlineEnabled: true,
+  outlineWidth: 9,
+  outputSize: 1080,
+};
+let fillerDragState = null;
 
 function shuffled(items) {
   const clone = [...items];
@@ -145,7 +195,431 @@ function artPattern(colors) {
   `;
 }
 
+function escapeHtml(value) {
+  return value
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
+}
+
+function getActiveFillerTemplate() {
+  return fillerTemplates.find((template) => template.id === fillerState.templateId) || fillerTemplates[0] || null;
+}
+
+function syncFillerControlLabels() {
+  if (fillerImageScaleValue) {
+    fillerImageScaleValue.textContent = `${fillerState.imageScale}%`;
+  }
+  if (fillerImageOutlineWidthValue) {
+    fillerImageOutlineWidthValue.textContent = fillerState.imageOutlineEnabled ? `${fillerState.imageOutlineWidth}px` : "off";
+  }
+  if (fillerImageOutlineToggleInput) {
+    fillerImageOutlineToggleInput.checked = fillerState.imageOutlineEnabled;
+  }
+  fillerFontSizeValue.textContent = String(fillerState.fontSize);
+  fillerWidthValue.textContent = `${fillerState.width}%`;
+  fillerLineHeightValue.textContent = Number(fillerState.lineHeight).toFixed(2);
+  if (fillerOutlineWidthValue) {
+    fillerOutlineWidthValue.textContent = fillerState.outlineEnabled ? `${fillerState.outlineWidth}px` : "off";
+  }
+  if (fillerOutlineToggleInput) {
+    fillerOutlineToggleInput.checked = fillerState.outlineEnabled;
+  }
+  if (fillerImageScaleInput) fillerImageScaleInput.value = String(fillerState.imageScale);
+  if (fillerImageOutlineWidthInput) fillerImageOutlineWidthInput.value = String(fillerState.imageOutlineWidth);
+  if (fillerFontSizeInput) fillerFontSizeInput.value = String(fillerState.fontSize);
+  if (fillerWidthInput) fillerWidthInput.value = String(fillerState.width);
+  if (fillerLineHeightInput) fillerLineHeightInput.value = String(fillerState.lineHeight);
+  if (fillerOutlineWidthInput) fillerOutlineWidthInput.value = String(fillerState.outlineWidth);
+  if (fillerOutputSizeInput) fillerOutputSizeInput.value = String(fillerState.outputSize);
+}
+
+function applyFillerTemplateDefaults(template) {
+  const defaults = template.defaults;
+  fillerState.templateId = template.id;
+  fillerState.text = defaults.text;
+  fillerState.imageX = defaults.imageX;
+  fillerState.imageY = defaults.imageY;
+  fillerState.imageScale = defaults.imageScale;
+  fillerState.imageOutlineEnabled = defaults.imageOutlineEnabled;
+  fillerState.imageOutlineWidth = defaults.imageOutlineWidth;
+  fillerState.x = defaults.x;
+  fillerState.y = defaults.y;
+  fillerState.width = defaults.width;
+  fillerState.fontSize = defaults.fontSize;
+  fillerState.lineHeight = defaults.lineHeight;
+  fillerState.outlineEnabled = defaults.outlineEnabled;
+  fillerState.outlineWidth = defaults.outlineWidth;
+  fillerState.outputSize = defaults.outputSize;
+
+  fillerTextInput.value = fillerState.text;
+  syncFillerControlLabels();
+}
+
+function splitTextToLines(context, text, maxWidth) {
+  return text.split("\n").flatMap((paragraph) => {
+    if (!paragraph) {
+      return [""];
+    }
+
+    const chars = [...paragraph];
+    const lines = [];
+    let current = "";
+
+    chars.forEach((char) => {
+      const next = current + char;
+
+      if (current && context.measureText(next).width > maxWidth) {
+        lines.push(current);
+        current = char;
+        return;
+      }
+
+      current = next;
+    });
+
+    if (current) {
+      lines.push(current);
+    }
+
+    return lines;
+  });
+}
+
+function getTemplateImageSrc(template) {
+  const asset = fillerTemplateAssets[template.id];
+
+  if (!asset) {
+    return template.imageUrl;
+  }
+
+  if (!fillerTemplateUrlCache.has(template.id)) {
+    const blob = new Blob([asset], { type: "image/svg+xml" });
+    fillerTemplateUrlCache.set(template.id, URL.createObjectURL(blob));
+  }
+
+  return fillerTemplateUrlCache.get(template.id);
+}
+
+function updateFillerPreview() {
+  const activeTemplate = getActiveFillerTemplate();
+
+  if (!activeTemplate) {
+    return;
+  }
+
+  fillerTemplateName.textContent = activeTemplate.name;
+  fillerPreviewArt.src = getTemplateImageSrc(activeTemplate);
+  fillerPreviewArt.style.left = `${fillerState.imageX}%`;
+  fillerPreviewArt.style.top = `${fillerState.imageY}%`;
+  fillerPreviewArt.style.width = `${fillerState.imageScale}%`;
+  fillerPreviewArt.style.setProperty("--image-outline-size", `${Math.max(2, fillerState.imageOutlineWidth / 4)}px`);
+  fillerPreviewArt.classList.toggle("has-image-outline", fillerState.imageOutlineEnabled);
+  fillerPreviewText.style.left = `${fillerState.x}%`;
+  fillerPreviewText.style.top = `${fillerState.y}%`;
+  fillerPreviewText.style.width = `${fillerState.width}%`;
+  fillerPreviewText.style.fontSize = `${fillerState.fontSize / 16}rem`;
+  fillerPreviewText.style.lineHeight = String(fillerState.lineHeight);
+  fillerPreviewText.style.setProperty("--outline-size", `${Math.max(2, fillerState.outlineWidth / 4)}px`);
+  fillerPreviewText.innerHTML = escapeHtml(fillerState.text).replaceAll("\n", "<br />");
+  fillerPreviewText.classList.toggle("has-outline", fillerState.outlineEnabled);
+}
+
+function renderFillerTemplates() {
+  if (!fillerTemplateList) {
+    return;
+  }
+
+  if (fillerTemplates.length === 0) {
+    fillerTemplateList.innerHTML = `<p class="filler-empty">目前還沒有填字模板。</p>`;
+    if (fillerDownloadButton) {
+      fillerDownloadButton.disabled = true;
+    }
+    return;
+  }
+
+  fillerTemplateList.innerHTML = fillerTemplates
+    .map(
+      (template) => `
+        <button class="filler-template-chip${template.id === fillerState.templateId ? " is-active" : ""}" type="button" data-template-id="${template.id}">
+          <img class="filler-template-thumb" src="${getTemplateImageSrc(template)}" alt="${template.name}" loading="lazy" />
+          <span>${template.name}</span>
+        </button>
+      `,
+    )
+    .join("");
+
+  fillerTemplateList.querySelectorAll("[data-template-id]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const nextTemplate = fillerTemplates.find((template) => template.id === button.dataset.templateId);
+
+      if (!nextTemplate) {
+        return;
+      }
+
+      applyFillerTemplateDefaults(nextTemplate);
+      renderFillerTemplates();
+      updateFillerPreview();
+    });
+  });
+}
+
+function bindFillerControls() {
+  if (!fillerTextInput || fillerTemplates.length === 0) {
+    return;
+  }
+
+  fillerTextInput.addEventListener("input", () => {
+    fillerState.text = fillerTextInput.value;
+    updateFillerPreview();
+  });
+
+  fillerImageScaleInput?.addEventListener("input", () => {
+    fillerState.imageScale = Number(fillerImageScaleInput.value);
+    syncFillerControlLabels();
+    updateFillerPreview();
+  });
+
+  fillerImageOutlineToggleInput?.addEventListener("change", () => {
+    fillerState.imageOutlineEnabled = fillerImageOutlineToggleInput.checked;
+    syncFillerControlLabels();
+    updateFillerPreview();
+  });
+
+  fillerImageOutlineWidthInput?.addEventListener("input", () => {
+    fillerState.imageOutlineWidth = Number(fillerImageOutlineWidthInput.value);
+    syncFillerControlLabels();
+    updateFillerPreview();
+  });
+
+  fillerFontSizeInput?.addEventListener("input", () => {
+    fillerState.fontSize = Number(fillerFontSizeInput.value);
+    syncFillerControlLabels();
+    updateFillerPreview();
+  });
+
+  fillerWidthInput?.addEventListener("input", () => {
+    fillerState.width = Number(fillerWidthInput.value);
+    syncFillerControlLabels();
+    updateFillerPreview();
+  });
+
+  fillerLineHeightInput?.addEventListener("input", () => {
+    fillerState.lineHeight = Number(fillerLineHeightInput.value);
+    syncFillerControlLabels();
+    updateFillerPreview();
+  });
+
+  fillerOutlineToggleInput?.addEventListener("change", () => {
+    fillerState.outlineEnabled = fillerOutlineToggleInput.checked;
+    syncFillerControlLabels();
+    updateFillerPreview();
+  });
+
+  fillerOutlineWidthInput?.addEventListener("input", () => {
+    fillerState.outlineWidth = Number(fillerOutlineWidthInput.value);
+    syncFillerControlLabels();
+    updateFillerPreview();
+  });
+
+  fillerOutputSizeInput?.addEventListener("input", () => {
+    const nextSize = Number(fillerOutputSizeInput.value);
+    fillerState.outputSize = Number.isFinite(nextSize) ? Math.max(512, Math.min(4096, nextSize)) : fillerState.outputSize;
+    syncFillerControlLabels();
+  });
+
+  fillerOutputSizeInput?.addEventListener("blur", () => {
+    syncFillerControlLabels();
+  });
+
+  fillerResetButton?.addEventListener("click", () => {
+    const activeTemplate = getActiveFillerTemplate();
+
+    if (!activeTemplate) {
+      return;
+    }
+
+    fillerState.x = activeTemplate.defaults.x;
+    fillerState.y = activeTemplate.defaults.y;
+    fillerState.width = activeTemplate.defaults.width;
+    fillerState.fontSize = activeTemplate.defaults.fontSize;
+    fillerState.lineHeight = activeTemplate.defaults.lineHeight;
+    fillerState.outlineEnabled = activeTemplate.defaults.outlineEnabled;
+    fillerState.outlineWidth = activeTemplate.defaults.outlineWidth;
+    fillerState.imageX = activeTemplate.defaults.imageX;
+    fillerState.imageY = activeTemplate.defaults.imageY;
+    fillerState.imageScale = activeTemplate.defaults.imageScale;
+    fillerState.imageOutlineEnabled = activeTemplate.defaults.imageOutlineEnabled;
+    fillerState.imageOutlineWidth = activeTemplate.defaults.imageOutlineWidth;
+    fillerState.outputSize = activeTemplate.defaults.outputSize;
+    syncFillerControlLabels();
+    updateFillerPreview();
+  });
+}
+
+function bindFillerDragging() {
+  if (!fillerStage || !fillerPreviewText || !fillerPreviewArt) {
+    return;
+  }
+
+  const onPointerMove = (event) => {
+    if (!fillerDragState) {
+      return;
+    }
+
+    const deltaX = event.clientX - fillerDragState.startX;
+    const deltaY = event.clientY - fillerDragState.startY;
+    const nextX = Math.max(8, Math.min(92, fillerDragState.originX + (deltaX / fillerDragState.width) * 100));
+    const nextY = Math.max(8, Math.min(92, fillerDragState.originY + (deltaY / fillerDragState.height) * 100));
+
+    if (fillerDragState.kind === "image") {
+      fillerState.imageX = nextX;
+      fillerState.imageY = nextY;
+    } else {
+      fillerState.x = nextX;
+      fillerState.y = nextY;
+    }
+
+    updateFillerPreview();
+  };
+
+  const stopDragging = () => {
+    if (!fillerDragState) {
+      return;
+    }
+
+    fillerPreviewText.classList.remove("is-dragging");
+    fillerPreviewArt.classList.remove("is-dragging");
+    fillerDragState = null;
+    window.removeEventListener("pointermove", onPointerMove);
+    window.removeEventListener("pointerup", stopDragging);
+  };
+
+  fillerPreviewText.addEventListener("pointerdown", (event) => {
+    const bounds = fillerStage.getBoundingClientRect();
+    fillerDragState = {
+      kind: "text",
+      startX: event.clientX,
+      startY: event.clientY,
+      originX: fillerState.x,
+      originY: fillerState.y,
+      width: bounds.width,
+      height: bounds.height,
+    };
+    fillerPreviewText.classList.add("is-dragging");
+    window.addEventListener("pointermove", onPointerMove);
+    window.addEventListener("pointerup", stopDragging);
+  });
+
+  fillerPreviewArt.addEventListener("pointerdown", (event) => {
+    const bounds = fillerStage.getBoundingClientRect();
+    fillerDragState = {
+      kind: "image",
+      startX: event.clientX,
+      startY: event.clientY,
+      originX: fillerState.imageX,
+      originY: fillerState.imageY,
+      width: bounds.width,
+      height: bounds.height,
+    };
+    fillerPreviewArt.classList.add("is-dragging");
+    window.addEventListener("pointermove", onPointerMove);
+    window.addEventListener("pointerup", stopDragging);
+  });
+}
+
+function loadImage(src) {
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+    image.onload = () => resolve(image);
+    image.onerror = () => reject(new Error(`圖片載入失敗：${src}`));
+    image.src = src;
+  });
+}
+
+async function downloadFillerImage() {
+  const activeTemplate = getActiveFillerTemplate();
+
+  if (!activeTemplate) {
+    return;
+  }
+
+  fillerDownloadButton.disabled = true;
+  fillerDownloadButton.textContent = "匯出中...";
+
+  try {
+    const resolvedImageUrl = getTemplateImageSrc(activeTemplate);
+    const image = await loadImage(resolvedImageUrl);
+    const canvas = document.createElement("canvas");
+    canvas.width = fillerState.outputSize;
+    canvas.height = fillerState.outputSize;
+
+    const context = canvas.getContext("2d");
+    const defaults = activeTemplate.defaults;
+    const fontSizePx = fillerState.fontSize;
+    const maxTextWidth = canvas.width * (fillerState.width / 100);
+    const centerX = canvas.width * (fillerState.x / 100);
+    const centerY = canvas.height * (fillerState.y / 100);
+    const drawWidth = canvas.width * (fillerState.imageScale / 100);
+    const drawHeight = canvas.height * (fillerState.imageScale / 100);
+    const drawX = canvas.width * (fillerState.imageX / 100) - drawWidth / 2;
+    const imageDrawY = canvas.height * (fillerState.imageY / 100) - drawHeight / 2;
+
+    if (fillerState.imageOutlineEnabled) {
+      const outlineStep = Math.max(2, fillerState.imageOutlineWidth);
+      context.save();
+      context.globalCompositeOperation = "source-over";
+      context.filter = `drop-shadow(${outlineStep}px 0 0 rgba(255,248,241,0.98))
+        drop-shadow(${-outlineStep}px 0 0 rgba(255,248,241,0.98))
+        drop-shadow(0 ${outlineStep}px 0 rgba(255,248,241,0.98))
+        drop-shadow(0 ${-outlineStep}px 0 rgba(255,248,241,0.98))`;
+      context.drawImage(image, drawX, imageDrawY, drawWidth, drawHeight);
+      context.restore();
+    }
+
+    context.drawImage(image, drawX, imageDrawY, drawWidth, drawHeight);
+    context.textAlign = "center";
+    context.textBaseline = "middle";
+    context.lineJoin = "round";
+    context.strokeStyle = defaults.stroke;
+    context.fillStyle = defaults.fill;
+    context.lineWidth = fillerState.outlineWidth;
+    context.font = `${defaults.fontWeight} ${fontSizePx}px "Noto Sans TC", sans-serif`;
+
+    const lines = splitTextToLines(context, fillerState.text.trim() || defaults.text, maxTextWidth);
+    const lineHeightPx = fontSizePx * fillerState.lineHeight;
+    let drawY = centerY - ((lines.length - 1) * lineHeightPx) / 2;
+
+    lines.forEach((line) => {
+      if (fillerState.outlineEnabled) {
+        context.strokeText(line, centerX, drawY, maxTextWidth);
+      }
+      context.fillText(line, centerX, drawY, maxTextWidth);
+      drawY += lineHeightPx;
+    });
+
+    const downloadLink = document.createElement("a");
+    downloadLink.href = canvas.toDataURL("image/png");
+    downloadLink.download = `${activeTemplate.downloadName}.png`;
+    downloadLink.style.display = "none";
+    document.body.append(downloadLink);
+    downloadLink.click();
+    downloadLink.remove();
+  } catch (error) {
+    window.alert("下載失敗，請再試一次。如果還是不行，我再幫你修。");
+  } finally {
+    fillerDownloadButton.disabled = false;
+    fillerDownloadButton.textContent = "下載";
+  }
+}
+
 function renderSocialLinks() {
+  if (!socialGrid) {
+    return;
+  }
+
   socialGrid.innerHTML = socialLinks
     .map(
       (item) => `
@@ -165,6 +639,10 @@ function renderSocialLinks() {
 }
 
 function renderGalleryFilters() {
+  if (!galleryFilters) {
+    return;
+  }
+
   const discoveredCategories = [...new Set(galleryItems.map((item) => item.category))];
   const categories = [
     "全部",
@@ -208,6 +686,10 @@ function renderGalleryFilters() {
 }
 
 function renderGallery() {
+  if (!galleryGrid) {
+    return;
+  }
+
   const visibleItems =
     activeCategory === "全部"
       ? galleryItems
@@ -246,6 +728,10 @@ function renderGallery() {
 }
 
 function renderMarquee() {
+  if (!marqueeTrack) {
+    return;
+  }
+
   if (galleryItems.length === 0) {
     marqueeTrack.innerHTML = "";
     return;
@@ -269,6 +755,10 @@ function renderMarquee() {
 }
 
 function renderBoard() {
+  if (!boardList) {
+    return;
+  }
+
   boardList.innerHTML = boardItems
     .map(
       (item) => `
@@ -287,6 +777,10 @@ function renderBoard() {
 }
 
 function renderProducts() {
+  if (!shopGrid) {
+    return;
+  }
+
   shopGrid.innerHTML = products
     .map(
       (item) => `
@@ -309,6 +803,10 @@ function renderProducts() {
 }
 
 function renderHero() {
+  if (!heroStats) {
+    return;
+  }
+
   const stats = [
     { value: `${socialLinks.length}`, label: "社群入口" },
     { value: `${galleryItems.length}`, label: "作品展示" },
@@ -330,6 +828,10 @@ function renderHero() {
 }
 
 function updateHeadline() {
+  if (!headlineType || !headlineDate || !headlineBadge || !headlineTitle || !headlineText) {
+    return;
+  }
+
   const item = boardItems[headlineIndex % boardItems.length];
   headlineType.textContent = item.type;
   headlineDate.textContent = item.date;
@@ -349,13 +851,31 @@ function init() {
   renderSocialLinks();
   renderGalleryFilters();
   renderGallery();
+  if (fillerTemplates.length > 0) {
+    applyFillerTemplateDefaults(getActiveFillerTemplate());
+  }
+  renderFillerTemplates();
+  bindFillerControls();
+  bindFillerDragging();
+  updateFillerPreview();
   renderBoard();
   renderProducts();
   renderHero();
-  yearLabel.textContent = new Date().getFullYear();
+  if (yearLabel) {
+    yearLabel.textContent = new Date().getFullYear();
+  }
 
-  window.setInterval(updateHeadline, 4000);
-  window.setInterval(renderMarquee, 16000);
+  if (fillerDownloadButton) {
+    fillerDownloadButton.addEventListener("click", downloadFillerImage);
+  }
+
+  if (headlineTitle) {
+    window.setInterval(updateHeadline, 4000);
+  }
+
+  if (marqueeTrack) {
+    window.setInterval(renderMarquee, 16000);
+  }
 }
 
 init();

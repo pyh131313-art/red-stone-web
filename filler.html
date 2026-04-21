@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>赫石 | 填字器</title>
+    <meta
+      name="description"
+      content="赫石的 SVG 填字器頁面，可輸入文字、調整位置並匯出成圖片。"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Noto+Sans+TC:wght@400;500;700;900&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="page-noise"></div>
+
+    <header class="site-header">
+      <a class="brand" href="./index.html">
+        <span class="brand-mark">赫</span>
+        <span class="brand-copy">
+          <strong>赫石</strong>
+          <small>filler tools</small>
+        </span>
+      </a>
+
+      <nav class="site-nav" aria-label="主選單">
+        <a href="./index.html">回首頁</a>
+        <a class="nav-beta-link" href="#filler">填字器 <small class="beta-badge">beta</small></a>
+      </nav>
+    </header>
+
+    <main id="top">
+      <section class="section-block filler-section" id="filler">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Filler</p>
+            <h2>填字器</h2>
+          </div>
+        </div>
+        <div class="filler-layout">
+          <div class="filler-panel">
+            <div class="filler-template-list" id="fillerTemplateList"></div>
+
+            <label class="filler-field">
+              <span>輸入文字</span>
+              <textarea id="fillerTextInput" rows="4" placeholder="想放進圖裡的字，直接打在這裡。"></textarea>
+            </label>
+
+            <section class="filler-group">
+              <div class="filler-group-head">
+                <strong>微調</strong>
+              </div>
+
+              <div class="filler-control-grid">
+                <label class="filler-field">
+                  <span>圖片大小 <strong id="fillerImageScaleValue">100%</strong></span>
+                  <input id="fillerImageScaleInput" type="range" min="55" max="160" step="1" value="100" />
+                </label>
+
+                <label class="filler-field">
+                  <span>文字大小 <strong id="fillerFontSizeValue">64</strong></span>
+                  <input id="fillerFontSizeInput" type="range" min="28" max="140" step="1" value="64" />
+                </label>
+
+                <label class="filler-field">
+                  <span>文字寬度 <strong id="fillerWidthValue">28%</strong></span>
+                  <input id="fillerWidthInput" type="range" min="16" max="60" step="1" value="28" />
+                </label>
+
+                <label class="filler-field">
+                  <span>行距 <strong id="fillerLineHeightValue">1.18</strong></span>
+                  <input id="fillerLineHeightInput" type="range" min="1" max="1.8" step="0.02" value="1.18" />
+                </label>
+              </div>
+            </section>
+
+            <section class="filler-group">
+              <div class="filler-group-head">
+                <strong>白邊</strong>
+              </div>
+
+              <div class="filler-toggle-row">
+                <label class="filler-toggle">
+                  <input id="fillerImageOutlineToggleInput" type="checkbox" checked />
+                  <span>圖片白邊</span>
+                </label>
+                <label class="filler-toggle">
+                  <input id="fillerOutlineToggleInput" type="checkbox" checked />
+                  <span>文字白邊</span>
+                </label>
+              </div>
+
+              <div class="filler-control-grid">
+                <label class="filler-field">
+                  <span>圖片白邊厚度 <strong id="fillerImageOutlineWidthValue">12px</strong></span>
+                  <input id="fillerImageOutlineWidthInput" type="range" min="4" max="20" step="1" value="12" />
+                </label>
+
+                <label class="filler-field">
+                  <span>文字白邊厚度 <strong id="fillerOutlineWidthValue">9px</strong></span>
+                  <input id="fillerOutlineWidthInput" type="range" min="4" max="18" step="1" value="9" />
+                </label>
+              </div>
+            </section>
+
+            <section class="filler-group">
+              <div class="filler-group-head">
+                <strong>輸出</strong>
+              </div>
+
+              <label class="filler-field filler-size-field">
+                <span>輸出尺寸</span>
+                <div class="filler-number-wrap">
+                  <input id="fillerOutputSizeInput" type="number" min="512" max="4096" step="1" value="1080" />
+                  <small>px</small>
+                </div>
+              </label>
+            </section>
+
+            <div class="filler-button-row">
+              <button class="button button-ghost filler-reset-button" id="fillerResetButton" type="button">重設</button>
+              <button class="button button-primary filler-download-button" id="fillerDownloadButton" type="button">下載</button>
+            </div>
+          </div>
+
+          <div class="filler-preview-card">
+            <div class="filler-preview-topline">
+              <strong id="fillerTemplateName">載入模板中...</strong>
+            </div>
+            <div class="filler-stage" id="fillerStage">
+              <img id="fillerPreviewArt" alt="填字模板預覽" loading="lazy" />
+              <div class="filler-preview-text" id="fillerPreviewText"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <p>© <span id="yearLabel"></span> 赫石. All rights reserved.</p>
+      <a href="#top">回到上方</a>
+    </footer>
+
+    <script src="./data/filler-template-assets.js"></script>
+    <script src="./data/filler-templates.js"></script>
+    <script src="./app.js"></script>
+  </body>
+</html>
