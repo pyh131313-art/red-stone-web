@@ -485,6 +485,8 @@ function bindFillerDragging() {
       return;
     }
 
+    event.preventDefault();
+
     const deltaX = event.clientX - fillerDragState.startX;
     const deltaY = event.clientY - fillerDragState.startY;
     const nextX = Math.max(8, Math.min(92, fillerDragState.originX + (deltaX / fillerDragState.width) * 100));
@@ -514,6 +516,7 @@ function bindFillerDragging() {
   };
 
   fillerPreviewText.addEventListener("pointerdown", (event) => {
+    event.preventDefault();
     const bounds = fillerStage.getBoundingClientRect();
     fillerDragState = {
       kind: "text",
@@ -524,12 +527,14 @@ function bindFillerDragging() {
       width: bounds.width,
       height: bounds.height,
     };
+    fillerPreviewText.setPointerCapture?.(event.pointerId);
     fillerPreviewText.classList.add("is-dragging");
     window.addEventListener("pointermove", onPointerMove);
     window.addEventListener("pointerup", stopDragging);
   });
 
   fillerPreviewArt.addEventListener("pointerdown", (event) => {
+    event.preventDefault();
     const bounds = fillerStage.getBoundingClientRect();
     fillerDragState = {
       kind: "image",
@@ -540,6 +545,7 @@ function bindFillerDragging() {
       width: bounds.width,
       height: bounds.height,
     };
+    fillerPreviewArt.setPointerCapture?.(event.pointerId);
     fillerPreviewArt.classList.add("is-dragging");
     window.addEventListener("pointermove", onPointerMove);
     window.addEventListener("pointerup", stopDragging);
@@ -553,6 +559,31 @@ function loadImage(src) {
     image.onerror = () => reject(new Error(`圖片載入失敗：${src}`));
     image.src = src;
   });
+}
+
+function drawOutlinedImage(context, image, x, y, width, height, outlineWidth, outlineColor) {
+  const step = Math.max(1, Math.round(outlineWidth));
+  const outlineCanvas = document.createElement("canvas");
+  outlineCanvas.width = Math.max(1, Math.ceil(width));
+  outlineCanvas.height = Math.max(1, Math.ceil(height));
+
+  const outlineContext = outlineCanvas.getContext("2d");
+  outlineContext.drawImage(image, 0, 0, width, height);
+  outlineContext.globalCompositeOperation = "source-in";
+  outlineContext.fillStyle = outlineColor;
+  outlineContext.fillRect(0, 0, outlineCanvas.width, outlineCanvas.height);
+  outlineContext.globalCompositeOperation = "source-over";
+
+  context.save();
+  for (let radius = 1; radius <= step; radius += 1) {
+    for (let angle = 0; angle < 360; angle += 12) {
+      const radians = (angle * Math.PI) / 180;
+      const offsetX = Math.cos(radians) * radius;
+      const offsetY = Math.sin(radians) * radius;
+      context.drawImage(outlineCanvas, x + offsetX, y + offsetY, width, height);
+    }
+  }
+  context.restore();
 }
 
 async function downloadFillerImage() {
@@ -584,21 +615,24 @@ async function downloadFillerImage() {
     const imageDrawY = canvas.height * (fillerState.imageY / 100) - drawHeight / 2;
 
     if (fillerState.imageOutlineEnabled) {
-      const outlineStep = Math.max(2, fillerState.imageOutlineWidth);
-      context.save();
-      context.globalCompositeOperation = "source-over";
-      context.filter = `drop-shadow(${outlineStep}px 0 0 rgba(255,248,241,0.98))
-        drop-shadow(${-outlineStep}px 0 0 rgba(255,248,241,0.98))
-        drop-shadow(0 ${outlineStep}px 0 rgba(255,248,241,0.98))
-        drop-shadow(0 ${-outlineStep}px 0 rgba(255,248,241,0.98))`;
-      context.drawImage(image, drawX, imageDrawY, drawWidth, drawHeight);
-      context.restore();
+      drawOutlinedImage(
+        context,
+        image,
+        drawX,
+        imageDrawY,
+        drawWidth,
+        drawHeight,
+        fillerState.imageOutlineWidth,
+        "rgba(255,248,241,0.98)",
+      );
     }
 
     context.drawImage(image, drawX, imageDrawY, drawWidth, drawHeight);
     context.textAlign = "center";
     context.textBaseline = "middle";
     context.lineJoin = "round";
+    context.lineCap = "round";
+    context.miterLimit = 2;
     context.strokeStyle = defaults.stroke;
     context.fillStyle = defaults.fill;
     context.lineWidth = fillerState.outlineWidth;
