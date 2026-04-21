@@ -6,12 +6,14 @@ const vm = require("vm");
 
 const projectRoot = path.resolve(__dirname, "..");
 const configFile = path.join(projectRoot, "gallery-sync.config.json");
+const manifestFile = path.join(projectRoot, "data", "gallery-sync-manifest.json");
 const supportedExtensions = new Set([".png", ".jpg", ".jpeg", ".webp", ".gif", ".avif"]);
 
 function loadConfig() {
   const fallbackConfig = {
     syncMode: "drive",
     driveFolderUrl: "",
+    extraDriveFiles: [],
     localSyncFolder: "生圖",
     outputFolder: path.join("assets", "gallery", "synced"),
     dataFile: path.join("data", "gallery-data.js"),
@@ -49,6 +51,10 @@ function ensureCleanDir(dirPath) {
   fs.mkdirSync(dirPath, { recursive: true });
 }
 
+function ensureDir(dirPath) {
+  fs.mkdirSync(dirPath, { recursive: true });
+}
+
 function categoryFromRelativePath(relativePath) {
   const segments = relativePath.split(path.sep);
   return segments.length > 1 ? segments[0] : "未分類";
@@ -71,6 +77,27 @@ function writeGalleryData(items) {
   const fileContent = `window.galleryItems = ${JSON.stringify(items, null, 2)};\n`;
   fs.mkdirSync(path.dirname(dataFile), { recursive: true });
   fs.writeFileSync(dataFile, fileContent, "utf8");
+}
+
+function loadManifest() {
+  if (!fs.existsSync(manifestFile)) {
+    return { version: 1, items: [] };
+  }
+
+  try {
+    const raw = JSON.parse(fs.readFileSync(manifestFile, "utf8"));
+    return {
+      version: 1,
+      items: Array.isArray(raw.items) ? raw.items : [],
+    };
+  } catch (error) {
+    return { version: 1, items: [] };
+  }
+}
+
+function writeManifest(items) {
+  ensureDir(path.dirname(manifestFile));
+  fs.writeFileSync(manifestFile, JSON.stringify({ version: 1, items }, null, 2), "utf8");
 }
 
 function buildGalleryItemsFromLocal() {
@@ -224,6 +251,21 @@ function buildDriveDownloadUrl(fileId) {
   return `https://drive.google.com/uc?export=download&id=${fileId}`;
 }
 
+function parseDriveFileId(fileUrl) {
+  const match = fileUrl.match(/\/file\/d\/([^/]+)/);
+  return match ? match[1] : null;
+}
+
+function extractDriveFileTitle(html) {
+  const metaMatch = html.match(/<meta property="og:title" content="([^"]+)"/);
+  if (metaMatch) {
+    return metaMatch[1];
+  }
+
+  const titleMatch = html.match(/<title>([^<]+) - Google 雲端硬碟<\/title>/);
+  return titleMatch ? titleMatch[1] : null;
+}
+
 function inferExtension(fileName, mimeType) {
   const parsedExt = path.extname(fileName).toLowerCase();
 
@@ -291,27 +333,107 @@ async function collectDriveImages(folderUrl) {
   return images;
 }
 
+async function collectExtraDriveImages(extraDriveFiles = []) {
+  const results = [];
+
+  for (const entry of extraDriveFiles) {
+    const configEntry = typeof entry === "string" ? { url: entry } : entry;
+    const fileUrl = configEntry.url;
+    const fileId = parseDriveFileId(fileUrl || "");
+
+    if (!fileUrl || !fileId) {
+      continue;
+    }
+
+    const html = await fetchText(fileUrl);
+    const fileName = extractDriveFileTitle(html) || fileId;
+    const extension = path.extname(fileName).toLowerCase() || ".png";
+
+    results.push({
+      id: fileId,
+      name: fileName,
+      mimeType: `image/${extension.replace(".", "") || "png"}`,
+      extension,
+      category: configEntry.category || "未分類",
+      driveUrl: buildDriveFileUrl(fileId),
+      downloadUrl: buildDriveDownloadUrl(fileId),
+    });
+  }
+
+  return results;
+}
+
 async function buildGalleryItemsFromDrive() {
   if (!config.driveFolderUrl) {
     throw new Error("gallery-sync.config.json 沒有設定 driveFolderUrl。");
   }
 
   const driveImages = await collectDriveImages(config.driveFolderUrl);
+  const extraDriveImages = await collectExtraDriveImages(config.extraDriveFiles);
+  const mergedImages = [...driveImages];
+  const seenIds = new Set(driveImages.map((image) => image.id));
 
-  if (driveImages.length === 0) {
+  for (const image of extraDriveImages) {
+    if (seenIds.has(image.id)) {
+      continue;
+    }
+
+    seenIds.add(image.id);
+    mergedImages.push(image);
+  }
+
+  if (mergedImages.length === 0) {
     console.log("Google Drive 資料夾沒有找到可同步的圖片，這次先保留現有圖庫。");
     return null;
   }
 
-  ensureCleanDir(outputRoot);
+  ensureDir(outputRoot);
 
+  const manifest = loadManifest();
+  const manifestById = new Map(manifest.items.map((item) => [item.id, item]));
   const seenHashes = new Set();
   const items = [];
+  const nextManifestItems = [];
   let skippedDownloads = 0;
+  let reusedCount = 0;
 
-  for (const [index, image] of driveImages.entries()) {
+  for (const cachedItem of manifest.items) {
+    if (cachedItem.hash) {
+      seenHashes.add(cachedItem.hash);
+    }
+  }
+
+  for (const [index, image] of mergedImages.entries()) {
+    const normalizedName = `${path.parse(image.name).name}${image.extension}`;
+    const outputName = buildOutputName(normalizedName, image.category, image.id);
+    const targetPath = path.join(outputRoot, outputName);
+    const cachedItem = manifestById.get(image.id);
+
+    if (cachedItem && fs.existsSync(targetPath)) {
+      reusedCount += 1;
+      nextManifestItems.push({
+        ...cachedItem,
+        id: image.id,
+        name: image.name,
+        category: image.category,
+        extension: image.extension,
+        driveUrl: image.driveUrl,
+        outputName,
+      });
+
+      items.push({
+        title: path.parse(image.name).name,
+        category: image.category,
+        year: "Google Drive 同步",
+        description: `來自「${image.category}」雲端資料夾的作品圖。`,
+        imageUrl: `./assets/gallery/synced/${outputName}`,
+        driveUrl: image.driveUrl,
+      });
+      continue;
+    }
+
     if ((index + 1) % 10 === 0 || index === 0) {
-      console.log(`正在下載第 ${index + 1} / ${driveImages.length} 張圖片...`);
+      console.log(`正在下載第 ${index + 1} / ${mergedImages.length} 張圖片...`);
     }
 
     let buffer;
@@ -332,12 +454,19 @@ async function buildGalleryItemsFromDrive() {
 
     seenHashes.add(hash);
 
-    const normalizedName = `${path.parse(image.name).name}${image.extension}`;
-    const outputName = buildOutputName(normalizedName, image.category, image.id);
-    const targetPath = path.join(outputRoot, outputName);
     fs.writeFileSync(targetPath, buffer);
 
     const imageUrl = `./assets/gallery/synced/${outputName}`;
+
+    nextManifestItems.push({
+      id: image.id,
+      name: image.name,
+      category: image.category,
+      extension: image.extension,
+      driveUrl: image.driveUrl,
+      outputName,
+      hash,
+    });
 
     items.push({
       title: path.parse(image.name).name,
@@ -349,10 +478,25 @@ async function buildGalleryItemsFromDrive() {
     });
   }
 
+  const activeOutputNames = new Set(nextManifestItems.map((item) => item.outputName));
+  for (const fileName of fs.readdirSync(outputRoot)) {
+    if (fileName.startsWith(".")) {
+      continue;
+    }
+
+    if (!activeOutputNames.has(fileName)) {
+      fs.rmSync(path.join(outputRoot, fileName), { force: true });
+    }
+  }
+
+  writeManifest(nextManifestItems);
+
   return {
     items,
-    skippedCount: driveImages.length - items.length,
+    skippedCount: mergedImages.length - items.length,
     skippedDownloads,
+    reusedCount,
+    extraCount: extraDriveImages.length,
   };
 }
 
@@ -375,6 +519,12 @@ async function main() {
   }
   if (result.skippedDownloads > 0) {
     console.log(`另有 ${result.skippedDownloads} 張圖片下載失敗，已先跳過。`);
+  }
+  if (result.reusedCount > 0) {
+    console.log(`已直接沿用 ${result.reusedCount} 張已同步圖片。`);
+  }
+  if (result.extraCount > 0) {
+    console.log(`另有 ${result.extraCount} 張指定單檔補抓來源。`);
   }
   if (config.driveFolderUrl) {
     console.log(`同步來源：${config.driveFolderUrl}`);

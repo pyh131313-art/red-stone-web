@@ -1,6 +1,12 @@
 {
   "syncMode": "drive",
   "driveFolderUrl": "https://drive.google.com/drive/folders/1G983h2cFfFJzsgzYdFsPKXXwlDIRN5f4?usp=share_link",
+  "extraDriveFiles": [
+    {
+      "url": "https://drive.google.com/file/d/1CbMqGpgbRBUyJcOyt3ZrFNRz5n8OQ1ns/view?usp=share_link",
+      "category": "薔薇"
+    }
+  ],
   "localSyncFolder": "生圖",
   "outputFolder": "assets/gallery/synced",
   "dataFile": "data/gallery-data.js"
