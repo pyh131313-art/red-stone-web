@@ -86,7 +86,7 @@ const siteIconSources = [
   "./assets/fillers/rose-sign.svg",
   "./assets/fillers/mold-pillow.svg",
 ];
-const fillerVersion = "beta v2026.04.21.1";
+const fillerVersion = "beta v2026.04.21.2";
 
 const boardItems = [
   {
