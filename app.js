@@ -133,6 +133,7 @@ const heroStats = document.querySelector("#heroStats");
 const yearLabel = document.querySelector("#yearLabel");
 const marqueeTrack = document.querySelector("#marqueeTrack");
 const galleryItems = Array.isArray(window.galleryItems) ? window.galleryItems : [];
+const preferredCategoryOrder = ["薔薇", "妮娜", "鍾馗", "黴醬", "歐妮亞", "其他", "未分類"];
 
 let activeCategory = "全部";
 let headlineIndex = 0;
@@ -176,7 +177,28 @@ function renderSocialLinks() {
 }
 
 function renderGalleryFilters() {
-  const categories = ["全部", ...new Set(galleryItems.map((item) => item.category))];
+  const discoveredCategories = [...new Set(galleryItems.map((item) => item.category))];
+  const categories = [
+    "全部",
+    ...discoveredCategories.sort((left, right) => {
+      const leftIndex = preferredCategoryOrder.indexOf(left);
+      const rightIndex = preferredCategoryOrder.indexOf(right);
+
+      if (leftIndex === -1 && rightIndex === -1) {
+        return left.localeCompare(right, "zh-Hant");
+      }
+
+      if (leftIndex === -1) {
+        return 1;
+      }
+
+      if (rightIndex === -1) {
+        return -1;
+      }
+
+      return leftIndex - rightIndex;
+    }),
+  ];
 
   galleryFilters.innerHTML = categories
     .map(
