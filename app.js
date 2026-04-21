@@ -337,18 +337,23 @@ function updateFillerPreview() {
   }
 
   fillerTemplateName.textContent = activeTemplate.name;
+  const previewSize = fillerStage?.clientWidth || fillerStage?.getBoundingClientRect().width || fillerState.outputSize;
+  const previewScale = previewSize > 0 ? previewSize / fillerState.outputSize : 1;
   fillerPreviewArt.src = getTemplateImageSrc(activeTemplate);
   fillerPreviewArt.style.left = `${fillerState.imageX}%`;
   fillerPreviewArt.style.top = `${fillerState.imageY}%`;
   fillerPreviewArt.style.width = `${fillerState.imageScale}%`;
-  fillerPreviewArt.style.setProperty("--image-outline-size", `${Math.max(2, fillerState.imageOutlineWidth / 4)}px`);
+  fillerPreviewArt.style.setProperty(
+    "--image-outline-size",
+    `${Math.max(1, fillerState.imageOutlineWidth * previewScale)}px`,
+  );
   fillerPreviewArt.classList.toggle("has-image-outline", fillerState.imageOutlineEnabled);
   fillerPreviewText.style.left = `${fillerState.x}%`;
   fillerPreviewText.style.top = `${fillerState.y}%`;
   fillerPreviewText.style.width = `${fillerState.width}%`;
-  fillerPreviewText.style.fontSize = `${fillerState.fontSize / 16}rem`;
+  fillerPreviewText.style.fontSize = `${Math.max(8, fillerState.fontSize * previewScale)}px`;
   fillerPreviewText.style.lineHeight = String(fillerState.lineHeight);
-  fillerPreviewText.style.setProperty("--outline-size", `${Math.max(1.5, fillerState.outlineWidth / 3)}px`);
+  fillerPreviewText.style.setProperty("--outline-size", `${Math.max(1, fillerState.outlineWidth * previewScale)}px`);
   fillerPreviewText.innerHTML = escapeHtml(fillerState.text).replaceAll("\n", "<br />");
   fillerPreviewText.classList.toggle("has-outline", fillerState.outlineEnabled);
 }
