@@ -3,10 +3,33 @@ const path = require("path");
 const crypto = require("crypto");
 
 const projectRoot = path.resolve(__dirname, "..");
-const sourceRoot = path.join(projectRoot, "生圖");
-const outputRoot = path.join(projectRoot, "assets", "gallery", "synced");
-const dataFile = path.join(projectRoot, "data", "gallery-data.js");
+const configFile = path.join(projectRoot, "gallery-sync.config.json");
 const supportedExtensions = new Set([".png", ".jpg", ".jpeg", ".webp", ".gif", ".avif"]);
+
+function loadConfig() {
+  const fallbackConfig = {
+    driveFolderUrl: "",
+    localSyncFolder: "生圖",
+    outputFolder: path.join("assets", "gallery", "synced"),
+    dataFile: path.join("data", "gallery-data.js"),
+  };
+
+  if (!fs.existsSync(configFile)) {
+    return fallbackConfig;
+  }
+
+  const rawConfig = JSON.parse(fs.readFileSync(configFile, "utf8"));
+
+  return {
+    ...fallbackConfig,
+    ...rawConfig,
+  };
+}
+
+const config = loadConfig();
+const sourceRoot = path.join(projectRoot, config.localSyncFolder);
+const outputRoot = path.join(projectRoot, config.outputFolder);
+const dataFile = path.join(projectRoot, config.dataFile);
 
 function slugify(value) {
   return value
@@ -125,7 +148,10 @@ function main() {
   const uniqueImageFiles = uniqueImagesByContent(imageFiles);
 
   if (imageFiles.length === 0) {
-    console.log("生圖 資料夾還沒有圖片，這次先保留現有圖庫。");
+    console.log(`${config.localSyncFolder} 資料夾還沒有圖片，這次先保留現有圖庫。`);
+    if (config.driveFolderUrl) {
+      console.log(`請先把這個 Google Drive 資料夾同步到本機：${config.driveFolderUrl}`);
+    }
     return;
   }
 
@@ -136,6 +162,9 @@ function main() {
   console.log(`已同步 ${galleryItems.length} 張圖片到網站圖庫。`);
   if (skippedCount > 0) {
     console.log(`已自動略過 ${skippedCount} 張重複圖片。`);
+  }
+  if (config.driveFolderUrl) {
+    console.log(`同步來源：${config.driveFolderUrl}`);
   }
   console.log("接下來重新整理網站確認，沒問題後再 git add / commit / push。");
 }
