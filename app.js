@@ -340,6 +340,11 @@ function updateHeadline() {
 }
 
 function init() {
+  if (window.location.hash) {
+    window.history.replaceState(null, "", window.location.pathname + window.location.search);
+    window.scrollTo({ top: 0, behavior: "auto" });
+  }
+
   renderMarquee();
   renderSocialLinks();
   renderGalleryFilters();
