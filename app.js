@@ -81,153 +81,6 @@ const socialLinks = [
   },
 ];
 
-const galleryItems = [
-  {
-    title: "21c75e57f5140052",
-    category: "薔薇",
-    year: "Google Drive",
-    description: "來自「薔薇」資料夾的作品圖。",
-    imageUrl: "./assets/gallery/rose-01.png",
-    driveUrl: "https://drive.google.com/file/d/126iT8DocC_zCp-P3X86-ZjxO5ObbAV_Q/view",
-  },
-  {
-    title: "23ff9a4c27442756",
-    category: "薔薇",
-    year: "Google Drive",
-    description: "來自「薔薇」資料夾的作品圖。",
-    imageUrl: "./assets/gallery/rose-02.png",
-    driveUrl: "https://drive.google.com/file/d/1oIcgdrLgDyH2LPqSiR35SCqS-9MNVLxX/view",
-  },
-  {
-    title: "601d2c179c6777e4",
-    category: "薔薇",
-    year: "Google Drive",
-    description: "來自「薔薇」資料夾的作品圖。",
-    imageUrl: "./assets/gallery/rose-03.png",
-    driveUrl: "https://drive.google.com/file/d/1-akGjKXq1HZZFwGqVQfntJGNDlQ79Uwc/view",
-  },
-  {
-    title: "IMG_0430",
-    category: "薔薇",
-    year: "Google Drive",
-    description: "來自「薔薇」資料夾的作品圖。",
-    imageUrl: "./assets/gallery/rose-04.png",
-    driveUrl: "https://drive.google.com/file/d/10k5O7AMIi4-l33BDxpk8E08SeUPwu1n0/view",
-  },
-  {
-    title: "IMG_0431",
-    category: "薔薇",
-    year: "Google Drive",
-    description: "來自「薔薇」資料夾的作品圖。",
-    imageUrl: "./assets/gallery/rose-05.png",
-    driveUrl: "https://drive.google.com/file/d/1DZIdLezSNOsoc5i7jj744crfUUoY8GPS/view",
-  },
-  {
-    title: "IMG_3454",
-    category: "薔薇",
-    year: "Google Drive",
-    description: "來自「薔薇」資料夾的作品圖。",
-    imageUrl: "./assets/gallery/rose-06.png",
-    driveUrl: "https://drive.google.com/file/d/1YbMfOSZBWAuswHpFXc9HTtefIAbXdD1Q/view",
-  },
-  {
-    title: "IMG_6520",
-    category: "妮娜",
-    year: "Google Drive",
-    description: "來自「妮娜」資料夾的作品圖。",
-    imageUrl: "./assets/gallery/nina-01.png",
-    driveUrl: "https://drive.google.com/file/d/16h3oaX8ZtA9jXQ8pql5SjVOGMNxMau4E/view",
-  },
-  {
-    title: "IMG_6538",
-    category: "妮娜",
-    year: "Google Drive",
-    description: "來自「妮娜」資料夾的作品圖。",
-    imageUrl: "./assets/gallery/nina-02.png",
-    driveUrl: "https://drive.google.com/file/d/19WCJm6WhdTo7gcVGdKxKWdrcSh2XXjRH/view",
-  },
-  {
-    title: "IMG_6577",
-    category: "妮娜",
-    year: "Google Drive",
-    description: "來自「妮娜」資料夾的作品圖。",
-    imageUrl: "./assets/gallery/nina-03.png",
-    driveUrl: "https://drive.google.com/file/d/1w_Lixz7uteQl136i46jzv1f_PNgqC3cK/view",
-  },
-  {
-    title: "IMG_6663",
-    category: "妮娜",
-    year: "Google Drive",
-    description: "來自「妮娜」資料夾的作品圖。",
-    imageUrl: "./assets/gallery/nina-04.png",
-    driveUrl: "https://drive.google.com/file/d/1X3g6UN2nl1XZWA4PAWBQbRDU_k9VYe0u/view",
-  },
-  {
-    title: "IMG_5533",
-    category: "鍾馗",
-    year: "Google Drive",
-    description: "來自「鍾馗」資料夾的作品圖。",
-    imageUrl: "./assets/gallery/zhongkui-01.png",
-    driveUrl: "https://drive.google.com/file/d/1pMTFk6lxtYtfqfQ-oD9hGF0-hCA-yjby/view",
-  },
-  {
-    title: "IMG_5565",
-    category: "鍾馗",
-    year: "Google Drive",
-    description: "來自「鍾馗」資料夾的作品圖。",
-    imageUrl: "./assets/gallery/zhongkui-02.png",
-    driveUrl: "https://drive.google.com/file/d/1tUcIf0Yh_qLd_fvgvwXMzFlz0XaSceiB/view",
-  },
-  {
-    title: "IMG_6558",
-    category: "鍾馗",
-    year: "Google Drive",
-    description: "來自「鍾馗」資料夾的作品圖。",
-    imageUrl: "./assets/gallery/zhongkui-03.png",
-    driveUrl: "https://drive.google.com/file/d/1mf9beS6uWYiX_SnVpDO_x8qVHmTTuYzO/view",
-  },
-  {
-    title: "IMG_6655",
-    category: "鍾馗",
-    year: "Google Drive",
-    description: "來自「鍾馗」資料夾的作品圖。",
-    imageUrl: "./assets/gallery/zhongkui-04.png",
-    driveUrl: "https://drive.google.com/file/d/1eFrekDikXFswUPrSbEISCXp1XCHnIbK9/view",
-  },
-  {
-    title: "03F34B46-7213-4E96-8DE5-5B54A4AEB689",
-    category: "黴醬",
-    year: "Google Drive",
-    description: "來自「黴醬」資料夾的作品圖。",
-    imageUrl: "./assets/gallery/meijiang-01.png",
-    driveUrl: "https://drive.google.com/file/d/1nMaxITsBKXj3zYE0nRbWxe3k3TW88kXn/view",
-  },
-  {
-    title: "IMG_0497",
-    category: "黴醬",
-    year: "Google Drive",
-    description: "來自「黴醬」資料夾的作品圖。",
-    imageUrl: "./assets/gallery/meijiang-02.png",
-    driveUrl: "https://drive.google.com/file/d/1EBaY77clUICi6g6Qc1OZcsUf1YwWJ0QE/view",
-  },
-  {
-    title: "IMG_6528",
-    category: "黴醬",
-    year: "Google Drive",
-    description: "來自「黴醬」資料夾的作品圖。",
-    imageUrl: "./assets/gallery/meijiang-03.png",
-    driveUrl: "https://drive.google.com/file/d/1Xkx3p4o8l0F0EjOm872IcCxk8ds1JJkt/view",
-  },
-  {
-    title: "IMG_6530",
-    category: "黴醬",
-    year: "Google Drive",
-    description: "來自「黴醬」資料夾的作品圖。",
-    imageUrl: "./assets/gallery/meijiang-04.png",
-    driveUrl: "https://drive.google.com/file/d/1NIYiRr_jeUhSm5mXHOYtGqDSXV7Bt7Uv/view",
-  },
-];
-
 const boardItems = [
   {
     type: "最新公告",
@@ -279,6 +132,7 @@ const headlineBadge = document.querySelector("#headlineBadge");
 const heroStats = document.querySelector("#heroStats");
 const yearLabel = document.querySelector("#yearLabel");
 const marqueeTrack = document.querySelector("#marqueeTrack");
+const galleryItems = Array.isArray(window.galleryItems) ? window.galleryItems : [];
 
 let activeCategory = "全部";
 let headlineIndex = 0;
@@ -349,6 +203,20 @@ function renderGallery() {
       ? galleryItems
       : galleryItems.filter((item) => item.category === activeCategory);
 
+  if (visibleItems.length === 0) {
+    galleryGrid.innerHTML = `
+      <article class="gallery-card">
+        <div class="gallery-body">
+          <div class="gallery-meta">
+            <span class="gallery-type">尚未同步</span>
+          </div>
+          <p class="gallery-empty-copy">把圖片放進「生圖」資料夾後執行同步，就會顯示在這裡。</p>
+        </div>
+      </article>
+    `;
+    return;
+  }
+
   galleryGrid.innerHTML = visibleItems
     .map(
       (item) => `
@@ -368,6 +236,11 @@ function renderGallery() {
 }
 
 function renderMarquee() {
+  if (galleryItems.length === 0) {
+    marqueeTrack.innerHTML = "";
+    return;
+  }
+
   const marqueePool = shuffled(galleryItems).slice(0, Math.min(10, galleryItems.length));
   const loopingItems = [...marqueePool, ...marqueePool];
 
