@@ -81,6 +81,12 @@ const socialLinks = [
   },
 ];
 
+const siteIconSources = [
+  "./assets/fillers/rose-bubble.svg",
+  "./assets/fillers/rose-sign.svg",
+  "./assets/fillers/mold-pillow.svg",
+];
+
 const boardItems = [
   {
     type: "最新公告",
@@ -141,6 +147,7 @@ const fillerDownloadButton = document.querySelector("#fillerDownloadButton");
 const fillerImageOutlineToggleInput = document.querySelector("#fillerImageOutlineToggleInput");
 const fillerOutlineToggleInput = document.querySelector("#fillerOutlineToggleInput");
 const fillerResetButton = document.querySelector("#fillerResetButton");
+const siteFavicon = document.querySelector("#siteFavicon");
 const headlineTitle = document.querySelector("#headlineTitle");
 const headlineText = document.querySelector("#headlineText");
 const headlineType = document.querySelector("#headlineType");
@@ -185,6 +192,15 @@ function shuffled(items) {
   }
 
   return clone;
+}
+
+function applyRandomFavicon() {
+  if (!siteFavicon || siteIconSources.length === 0) {
+    return;
+  }
+
+  const nextIcon = siteIconSources[Math.floor(Math.random() * siteIconSources.length)];
+  siteFavicon.href = nextIcon;
 }
 
 function artPattern(colors) {
@@ -842,6 +858,8 @@ function updateHeadline() {
 }
 
 function init() {
+  applyRandomFavicon();
+
   if (window.location.hash) {
     window.history.replaceState(null, "", window.location.pathname + window.location.search);
     window.scrollTo({ top: 0, behavior: "auto" });
