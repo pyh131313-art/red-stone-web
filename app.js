@@ -338,7 +338,7 @@ function updateFillerPreview() {
   fillerPreviewText.style.width = `${fillerState.width}%`;
   fillerPreviewText.style.fontSize = `${fillerState.fontSize / 16}rem`;
   fillerPreviewText.style.lineHeight = String(fillerState.lineHeight);
-  fillerPreviewText.style.setProperty("--outline-size", `${Math.max(2, fillerState.outlineWidth / 4)}px`);
+  fillerPreviewText.style.setProperty("--outline-size", `${Math.max(1.5, fillerState.outlineWidth / 3)}px`);
   fillerPreviewText.innerHTML = escapeHtml(fillerState.text).replaceAll("\n", "<br />");
   fillerPreviewText.classList.toggle("has-outline", fillerState.outlineEnabled);
 }
@@ -508,8 +508,11 @@ function bindFillerDragging() {
       return;
     }
 
+    fillerStage.classList.remove("is-dragging");
     fillerPreviewText.classList.remove("is-dragging");
     fillerPreviewArt.classList.remove("is-dragging");
+    document.body.style.overflow = "";
+    document.documentElement.style.overflow = "";
     fillerDragState = null;
     window.removeEventListener("pointermove", onPointerMove);
     window.removeEventListener("pointerup", stopDragging);
@@ -527,6 +530,9 @@ function bindFillerDragging() {
       width: bounds.width,
       height: bounds.height,
     };
+    fillerStage.classList.add("is-dragging");
+    document.body.style.overflow = "hidden";
+    document.documentElement.style.overflow = "hidden";
     fillerPreviewText.setPointerCapture?.(event.pointerId);
     fillerPreviewText.classList.add("is-dragging");
     window.addEventListener("pointermove", onPointerMove);
@@ -545,6 +551,9 @@ function bindFillerDragging() {
       width: bounds.width,
       height: bounds.height,
     };
+    fillerStage.classList.add("is-dragging");
+    document.body.style.overflow = "hidden";
+    document.documentElement.style.overflow = "hidden";
     fillerPreviewArt.setPointerCapture?.(event.pointerId);
     fillerPreviewArt.classList.add("is-dragging");
     window.addEventListener("pointermove", onPointerMove);

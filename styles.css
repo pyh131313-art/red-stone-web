@@ -749,6 +749,10 @@ h2 {
   touch-action: pan-y;
 }
 
+.filler-stage.is-dragging {
+  touch-action: none;
+}
+
 .filler-stage img {
   position: absolute;
   left: 50%;
@@ -789,16 +793,9 @@ h2 {
 }
 
 .filler-preview-text.has-outline {
-  text-shadow:
-    0 calc(var(--outline-size) * -1) 0 rgba(255, 248, 241, 0.95),
-    var(--outline-size) 0 0 rgba(255, 248, 241, 0.95),
-    0 var(--outline-size) 0 rgba(255, 248, 241, 0.95),
-    calc(var(--outline-size) * -1) 0 0 rgba(255, 248, 241, 0.95),
-    var(--outline-size) var(--outline-size) 0 rgba(255, 248, 241, 0.95),
-    calc(var(--outline-size) * -1) var(--outline-size) 0 rgba(255, 248, 241, 0.95),
-    var(--outline-size) calc(var(--outline-size) * -1) 0 rgba(255, 248, 241, 0.95),
-    calc(var(--outline-size) * -1) calc(var(--outline-size) * -1) 0 rgba(255, 248, 241, 0.95),
-    0 10px 18px rgba(124, 45, 28, 0.14);
+  -webkit-text-stroke: var(--outline-size) rgba(255, 248, 241, 0.95);
+  paint-order: stroke fill;
+  text-shadow: 0 10px 18px rgba(124, 45, 28, 0.14);
 }
 
 .filler-preview-text.is-dragging {
