@@ -86,6 +86,7 @@ const siteIconSources = [
   "./assets/fillers/rose-sign.svg",
   "./assets/fillers/mold-pillow.svg",
 ];
+const fillerVersion = "beta v2026.04.21.1";
 
 const boardItems = [
   {
@@ -147,6 +148,7 @@ const fillerDownloadButton = document.querySelector("#fillerDownloadButton");
 const fillerImageOutlineToggleInput = document.querySelector("#fillerImageOutlineToggleInput");
 const fillerOutlineToggleInput = document.querySelector("#fillerOutlineToggleInput");
 const fillerResetButton = document.querySelector("#fillerResetButton");
+const fillerVersionLabel = document.querySelector("#fillerVersionLabel");
 const siteFavicon = document.querySelector("#siteFavicon");
 const headlineTitle = document.querySelector("#headlineTitle");
 const headlineText = document.querySelector("#headlineText");
@@ -201,6 +203,14 @@ function applyRandomFavicon() {
 
   const nextIcon = siteIconSources[Math.floor(Math.random() * siteIconSources.length)];
   siteFavicon.href = nextIcon;
+}
+
+function applyVersionLabel() {
+  if (!fillerVersionLabel) {
+    return;
+  }
+
+  fillerVersionLabel.textContent = fillerVersion;
 }
 
 function artPattern(colors) {
@@ -902,6 +912,7 @@ function updateHeadline() {
 
 function init() {
   applyRandomFavicon();
+  applyVersionLabel();
 
   if (window.location.hash) {
     window.history.replaceState(null, "", window.location.pathname + window.location.search);

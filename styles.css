@@ -572,6 +572,22 @@ h2 {
   gap: 0.6rem;
 }
 
+.filler-version {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.9rem;
+  margin-top: 0.55rem;
+  padding: 0.22rem 0.7rem;
+  border-radius: 999px;
+  background: rgba(223, 90, 42, 0.1);
+  border: 1px solid rgba(223, 90, 42, 0.14);
+  color: var(--accent-deep);
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
 .filler-template-chip {
   width: 92px;
   padding: 0.5rem;
