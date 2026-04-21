@@ -86,7 +86,7 @@ const siteIconSources = [
   "./assets/fillers/rose-sign.svg",
   "./assets/fillers/mold-pillow.svg",
 ];
-const fillerVersion = "beta v2026.04.21.4";
+const fillerVersion = "beta v2026.04.21.5";
 
 const boardItems = [
   {
@@ -127,6 +127,7 @@ const boardList = document.querySelector("#boardList");
 const shopGrid = document.querySelector("#shopGrid");
 const fillerTemplateList = document.querySelector("#fillerTemplateList");
 const fillerStage = document.querySelector("#fillerStage");
+const fillerPreviewArtOutline = document.querySelector("#fillerPreviewArtOutline");
 const fillerPreviewArt = document.querySelector("#fillerPreviewArt");
 const fillerPreviewText = document.querySelector("#fillerPreviewText");
 const fillerTemplateName = document.querySelector("#fillerTemplateName");
@@ -234,6 +235,11 @@ function getActiveFillerTemplate() {
   return fillerTemplates.find((template) => template.id === fillerState.templateId) || fillerTemplates[0] || null;
 }
 
+function getFillerPreviewScale() {
+  const previewSize = fillerStage?.clientWidth || fillerStage?.getBoundingClientRect().width || fillerState.outputSize;
+  return previewSize > 0 ? previewSize / fillerState.outputSize : 1;
+}
+
 function syncFillerControlLabels() {
   if (fillerImageScaleValue) {
     fillerImageScaleValue.textContent = `${fillerState.imageScale}%`;
@@ -337,17 +343,21 @@ function updateFillerPreview() {
   }
 
   fillerTemplateName.textContent = activeTemplate.name;
-  const previewSize = fillerStage?.clientWidth || fillerStage?.getBoundingClientRect().width || fillerState.outputSize;
-  const previewScale = previewSize > 0 ? previewSize / fillerState.outputSize : 1;
-  fillerPreviewArt.src = getTemplateImageSrc(activeTemplate);
+  const previewScale = getFillerPreviewScale();
+  const templateSrc = getTemplateImageSrc(activeTemplate);
+  fillerPreviewArt.src = templateSrc;
+  if (fillerPreviewArtOutline) {
+    const outlinePixels = Math.max(1, fillerState.imageOutlineWidth * previewScale);
+    fillerPreviewArtOutline.src = templateSrc;
+    fillerPreviewArtOutline.style.left = `${fillerState.imageX}%`;
+    fillerPreviewArtOutline.style.top = `${fillerState.imageY}%`;
+    fillerPreviewArtOutline.style.width = `${fillerState.imageScale}%`;
+    fillerPreviewArtOutline.style.setProperty("--image-outline-size", `${outlinePixels}px`);
+    fillerPreviewArtOutline.classList.toggle("is-visible", fillerState.imageOutlineEnabled);
+  }
   fillerPreviewArt.style.left = `${fillerState.imageX}%`;
   fillerPreviewArt.style.top = `${fillerState.imageY}%`;
   fillerPreviewArt.style.width = `${fillerState.imageScale}%`;
-  fillerPreviewArt.style.setProperty(
-    "--image-outline-size",
-    `${Math.max(1, fillerState.imageOutlineWidth * previewScale)}px`,
-  );
-  fillerPreviewArt.classList.toggle("has-image-outline", fillerState.imageOutlineEnabled);
   fillerPreviewText.style.left = `${fillerState.x}%`;
   fillerPreviewText.style.top = `${fillerState.y}%`;
   fillerPreviewText.style.width = `${fillerState.width}%`;
