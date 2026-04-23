@@ -1222,5 +1222,21 @@ window.galleryItems = [
     "description": "來自「薔薇」雲端資料夾的作品圖。",
     "imageUrl": "./assets/gallery/synced/薔薇-img-7963-031eb898.gif",
     "driveUrl": "https://drive.google.com/file/d/1CbMqGpgbRBUyJcOyt3ZrFNRz5n8OQ1ns/view"
+  },
+  {
+    "title": "未命名 10",
+    "category": "薔薇",
+    "year": "Google Drive 同步",
+    "description": "來自「薔薇」雲端資料夾的作品圖。",
+    "imageUrl": "./assets/gallery/synced/薔薇-未命名-10-203b873b.png",
+    "driveUrl": "https://drive.google.com/file/d/1n7sJ1jaEqZbTfYWsdlLXXAwBxtI6fSlw/view"
+  },
+  {
+    "title": "IMG_8006",
+    "category": "薔薇",
+    "year": "Google Drive 同步",
+    "description": "來自「薔薇」雲端資料夾的作品圖。",
+    "imageUrl": "./assets/gallery/synced/薔薇-img-8006-e782696e.gif",
+    "driveUrl": "https://drive.google.com/file/d/1Cm5o9ATzZ0iORkhV-5yFvt_6SQOvAUfH/view"
   }
 ];
