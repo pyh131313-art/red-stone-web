@@ -435,6 +435,10 @@ function commitFillerOutputSize() {
 }
 
 function syncFillerControlLabels() {
+  if (!fillerFontSizeValue || !fillerWidthValue || !fillerLineHeightValue) {
+    return;
+  }
+
   if (fillerImageScaleValue) {
     fillerImageScaleValue.textContent = `${fillerState.imageScale}%`;
   }
@@ -463,6 +467,10 @@ function syncFillerControlLabels() {
 }
 
 function applyFillerTemplateDefaults(template) {
+  if (!template) {
+    return;
+  }
+
   const defaults = template.defaults;
   fillerState.templateId = template.id;
   fillerState.text = defaults.text;
@@ -480,7 +488,9 @@ function applyFillerTemplateDefaults(template) {
   fillerState.outlineWidth = defaults.outlineWidth;
   fillerState.outputSize = defaults.outputSize;
 
-  fillerTextInput.value = fillerState.text;
+  if (fillerTextInput) {
+    fillerTextInput.value = fillerState.text;
+  }
   syncFillerControlLabels();
 }
 
@@ -532,7 +542,7 @@ function getTemplateImageSrc(template) {
 function updateFillerPreview() {
   const activeTemplate = getActiveFillerTemplate();
 
-  if (!activeTemplate) {
+  if (!activeTemplate || !fillerTemplateName || !fillerPreviewArt || !fillerPreviewText) {
     return;
   }
 
@@ -1150,13 +1160,16 @@ function init() {
   renderSocialLinks();
   renderGalleryFilters();
   renderGallery();
-  if (fillerTemplates.length > 0) {
+  const hasFillerUI = Boolean(fillerTemplateList || fillerStage || fillerTextInput || fillerPreviewArt || fillerPreviewText);
+  if (hasFillerUI && fillerTemplates.length > 0) {
     applyFillerTemplateDefaults(getActiveFillerTemplate());
   }
-  renderFillerTemplates();
-  bindFillerControls();
-  bindFillerDragging();
-  updateFillerPreview();
+  if (hasFillerUI) {
+    renderFillerTemplates();
+    bindFillerControls();
+    bindFillerDragging();
+    updateFillerPreview();
+  }
   renderBoard();
   renderProducts();
   renderHero();
