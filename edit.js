@@ -260,6 +260,30 @@ function saveWorkerUrl(url) {
   window.localStorage.setItem(WORKER_URL_STORAGE_KEY, url.trim());
 }
 
+function buildPublishableGalleryItems() {
+  const { overrides, customItems } = collectGalleryState();
+  const overrideMap = new Map(overrides.map((item) => [item.matchKey, item]));
+  const mergedDefaults = defaultGalleryItems.map((item) => {
+    const matchKey = createGalleryMatchKey(item);
+    const override = overrideMap.get(matchKey);
+
+    if (!override) {
+      return item;
+    }
+
+    return {
+      title: override.title,
+      category: override.category,
+      year: override.year,
+      description: override.description,
+      imageUrl: override.imageUrl,
+      driveUrl: override.driveUrl,
+    };
+  });
+
+  return [...mergedDefaults, ...customItems];
+}
+
 function loadEditableGalleryItems() {
   const overrides = new Map(loadGalleryOverrides().map((item) => [item.matchKey, item]));
   const baseItems = defaultGalleryItems.map((item) => {
@@ -748,6 +772,7 @@ async function publishToWorker() {
   const boardItems = collectBoardItems();
   const products = collectProductDraftItems().filter((item) => item.name && item.imageUrl && item.href);
   const fillerTemplates = collectTemplateDraftItems().filter((item) => item.name && item.imageUrl);
+  const galleryItems = buildPublishableGalleryItems();
 
   editorPublishButton.disabled = true;
   editorSaveStatus.textContent = "發布中，正在送到 Cloudflare Worker...";
@@ -763,6 +788,7 @@ async function publishToWorker() {
         boardItems,
         products,
         fillerTemplates,
+        galleryItems,
         commitMessage: `Update site content from editor (${new Date().toISOString()})`,
       }),
     });

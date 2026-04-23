@@ -71,6 +71,7 @@ async function handlePublish(request, env, corsHeaders) {
   const boardItems = normalizeBoardItems(payload?.boardItems);
   const products = normalizeProducts(payload?.products);
   const fillerTemplates = normalizeFillerTemplates(payload?.fillerTemplates);
+  const galleryItems = normalizeGalleryItems(payload?.galleryItems);
 
   const files = [
     {
@@ -82,6 +83,11 @@ async function handlePublish(request, env, corsHeaders) {
       path: "data/filler-templates.js",
       content: renderFillerTemplatesFile(fillerTemplates),
       message: payload?.commitMessage || "Update filler templates from editor",
+    },
+    {
+      path: "data/gallery-data.js",
+      content: renderGalleryDataFile(galleryItems),
+      message: payload?.commitMessage || "Update gallery data from editor",
     },
   ];
 
@@ -175,6 +181,10 @@ function renderFillerTemplatesFile(items) {
   return `window.fillerTemplates = ${JSON.stringify(items, null, 2)};\n`;
 }
 
+function renderGalleryDataFile(items) {
+  return `window.galleryItems = ${JSON.stringify(items, null, 2)};\n`;
+}
+
 function normalizeBoardItems(items) {
   if (!Array.isArray(items)) {
     return [];
@@ -205,6 +215,23 @@ function normalizeProducts(items) {
       href: String(item?.href || "").trim(),
     }))
     .filter((item) => item.name && item.imageUrl && item.href);
+}
+
+function normalizeGalleryItems(items) {
+  if (!Array.isArray(items)) {
+    return [];
+  }
+
+  return items
+    .map((item) => ({
+      title: String(item?.title || "").trim(),
+      category: String(item?.category || "未分類").trim() || "未分類",
+      year: String(item?.year || "Google Drive 同步").trim() || "Google Drive 同步",
+      description: String(item?.description || "").trim(),
+      imageUrl: String(item?.imageUrl || "").trim(),
+      driveUrl: String(item?.driveUrl || "").trim(),
+    }))
+    .filter((item) => item.imageUrl && item.driveUrl);
 }
 
 function getDefaultTemplateDefaults() {
