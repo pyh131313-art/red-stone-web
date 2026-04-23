@@ -17,12 +17,6 @@ window.siteContent = {
       "title": "近期已恢復正常更新",
       "date": "近期",
       "description": "最近已經恢復正常更新，作品與近況都會陸續補上。"
-    },
-    {
-      "type": "最新公告",
-      "title": "測試",
-      "date": "近期",
-      "description": "測試"
     }
   ],
   "products": [
