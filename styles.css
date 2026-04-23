@@ -905,6 +905,84 @@ h2 {
   color: var(--muted);
 }
 
+#editorSaveStatus {
+  position: fixed;
+  right: max(1rem, env(safe-area-inset-right));
+  bottom: max(1rem, env(safe-area-inset-bottom));
+  z-index: 40;
+  width: min(24rem, calc(100vw - 2rem));
+  margin: 0;
+  box-shadow: 0 18px 45px rgba(32, 27, 24, 0.16);
+  backdrop-filter: blur(14px);
+  opacity: 0;
+  transform: translateY(0.75rem);
+  pointer-events: none;
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+
+#editorSaveStatus.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.editor-toast {
+  position: fixed;
+  right: max(1rem, env(safe-area-inset-right));
+  bottom: max(1rem, env(safe-area-inset-bottom));
+  z-index: 999;
+  width: min(24rem, calc(100vw - 2rem));
+  margin: 0;
+  padding: 0.95rem 1.05rem;
+  border-radius: 18px;
+  border: 1px solid rgba(32, 27, 24, 0.08);
+  background: rgba(255, 251, 246, 0.95);
+  color: var(--muted);
+  line-height: 1.55;
+  box-shadow: 0 18px 45px rgba(32, 27, 24, 0.18);
+  backdrop-filter: blur(14px);
+  opacity: 0;
+  transform: translateY(0.75rem);
+  pointer-events: none;
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.editor-toast[data-tone="success"] {
+  color: #1f6b48;
+  border-color: rgba(31, 107, 72, 0.18);
+  background: rgba(230, 247, 238, 0.96);
+}
+
+.editor-toast[data-tone="error"] {
+  color: #9f2f2f;
+  border-color: rgba(159, 47, 47, 0.18);
+  background: rgba(255, 238, 238, 0.97);
+}
+
+.editor-toast[data-tone="info"] {
+  color: var(--muted);
+}
+
+.editor-toast.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (max-width: 720px) {
+  #editorSaveStatus {
+    left: 1rem;
+    right: 1rem;
+    width: auto;
+    bottom: max(0.9rem, env(safe-area-inset-bottom));
+  }
+
+  .editor-toast {
+    left: 1rem;
+    right: 1rem;
+    width: auto;
+    bottom: max(0.9rem, env(safe-area-inset-bottom));
+  }
+}
+
 .editor-password-input {
   width: 100%;
   min-height: 3rem;
@@ -1360,6 +1438,143 @@ h2 {
   .hero-panel-head {
     align-items: start;
     flex-direction: column;
+  }
+}
+
+@media (min-width: 721px) and (max-width: 1024px) and (orientation: portrait) {
+  .site-header,
+  .site-footer {
+    width: min(100%, calc(100% - 1.75rem));
+  }
+
+  main {
+    width: min(100%, calc(100% - 1.75rem));
+  }
+
+  .site-header {
+    display: grid;
+    grid-template-columns: 1fr;
+    justify-items: start;
+    gap: 0.85rem;
+    padding-top: 1rem;
+    padding-bottom: 0.7rem;
+  }
+
+  .site-nav {
+    width: 100%;
+    gap: 0.65rem;
+  }
+
+  .site-nav a {
+    padding-inline: 0.9rem;
+  }
+
+  .hero {
+    gap: 1rem;
+    padding: 1.35rem;
+    border-radius: 28px;
+  }
+
+  .hero-copy {
+    gap: 0.85rem;
+  }
+
+  .hero-panel {
+    padding: 1rem;
+    border-radius: 24px;
+  }
+
+  .headline-card {
+    padding: 1rem;
+  }
+
+  .headline-card strong {
+    font-size: 1.18rem;
+  }
+
+  .hero-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .hero-marquee-band {
+    gap: 0.65rem;
+  }
+
+  .marquee-shell {
+    border-radius: 22px;
+  }
+
+  .marquee-item {
+    width: 168px;
+    flex-basis: 168px;
+  }
+
+  .social-grid,
+  .gallery-grid,
+  .shop-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .split-layout {
+    gap: 1rem;
+  }
+
+  .section-block {
+    padding: 1.2rem;
+    border-radius: 28px;
+  }
+
+  .section-heading {
+    margin-bottom: 0.85rem;
+  }
+
+  .section-intro {
+    max-width: none;
+  }
+
+  .board-card {
+    padding: 0.95rem 1rem;
+  }
+
+  .filler-layout {
+    gap: 0.9rem;
+  }
+
+  .filler-preview-card,
+  .filler-panel {
+    width: 100%;
+  }
+
+  .filler-stage {
+    width: min(100%, 620px);
+  }
+
+  .filler-template-list {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 0.25rem;
+    margin: 0 -0.1rem;
+    padding-inline: 0.1rem;
+    scroll-snap-type: x proximity;
+  }
+
+  .filler-template-chip {
+    flex: 0 0 88px;
+    width: 88px;
+    scroll-snap-align: start;
+  }
+
+  .filler-control-grid,
+  .filler-button-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .editor-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .editor-actions {
+    gap: 0.6rem;
   }
 }
 

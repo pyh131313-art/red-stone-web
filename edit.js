@@ -50,6 +50,10 @@ let galleryDraftItems = [];
 let boardDraftItems = [];
 let templateDraftItems = [];
 let productDraftItems = [];
+let editorStatusTimer = null;
+const editorToast = document.createElement("div");
+editorToast.className = "editor-toast";
+document.body.append(editorToast);
 
 function setEditorStatus(message, tone = "info") {
   if (!editorSaveStatus) {
@@ -58,9 +62,21 @@ function setEditorStatus(message, tone = "info") {
 
   editorSaveStatus.textContent = message;
   editorSaveStatus.dataset.tone = tone;
+  editorToast.textContent = message;
+  editorToast.dataset.tone = tone;
+  editorSaveStatus.classList.toggle("is-visible", Boolean(message));
+  editorToast.classList.toggle("is-visible", Boolean(message));
+
+  if (editorStatusTimer) {
+    window.clearTimeout(editorStatusTimer);
+    editorStatusTimer = null;
+  }
 
   if (message) {
-    editorSaveStatus.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    editorStatusTimer = window.setTimeout(() => {
+      editorSaveStatus.classList.remove("is-visible");
+      editorToast.classList.remove("is-visible");
+    }, 2600);
   }
 }
 
