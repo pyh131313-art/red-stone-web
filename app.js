@@ -87,38 +87,15 @@ const siteIconSources = [
   "./assets/fillers/mold-pillow.svg",
 ];
 const fillerVersion = "beta v2026.04.21.6";
-
-const boardItems = [
-  {
-    type: "最新公告",
-    title: "壓克力牌週邊絕讚販售中",
-    date: "近期",
-    description: "目前壓克力牌周邊持續販售中，想購買可以直接前往商品區查看。",
-  },
-  {
-    type: "網站更新",
-    title: "填詞器開放測試",
-    date: "近期",
-    description: "填詞器頁面已經開放測試，現在可以先試用模板、拖曳文字和輸出圖片。",
-  },
-  {
-    type: "工作近況",
-    title: "近期已恢復正常更新",
-    date: "近期",
-    description: "最近已經恢復正常更新，作品與近況都會陸續補上。",
-  },
-];
-
-const products = [
-  {
-    name: "薔薇園立牌第一彈",
-    status: "新上架",
-    price: "NT$120",
-    description: "黴醬和薔薇的 3cm 立牌，點進去可直接查看商品細節與下單。",
-    imageUrl: "./assets/products/rose-stand-first-wave.jpg",
-    href: "https://myship.7-11.com.tw/general/detail/GM2603165802747",
-  },
-];
+const BOARD_STORAGE_KEY = "heshi-board-items";
+const EXTRA_GALLERY_STORAGE_KEY = "heshi-extra-gallery-items";
+const GALLERY_OVERRIDE_STORAGE_KEY = "heshi-gallery-overrides";
+const PRODUCT_STORAGE_KEY = "heshi-products";
+const FILLER_TEMPLATE_STORAGE_KEY = "heshi-filler-templates";
+const defaultBoardItems = Array.isArray(window.siteContent?.boardItems) ? window.siteContent.boardItems : [];
+const defaultGalleryItems = Array.isArray(window.galleryItems) ? window.galleryItems : [];
+const defaultProducts = Array.isArray(window.siteContent?.products) ? window.siteContent.products : [];
+const defaultFillerTemplates = Array.isArray(window.fillerTemplates) ? window.fillerTemplates : [];
 
 const socialGrid = document.querySelector("#socialGrid");
 const galleryGrid = document.querySelector("#galleryGrid");
@@ -159,14 +136,16 @@ const headlineBadge = document.querySelector("#headlineBadge");
 const heroStats = document.querySelector("#heroStats");
 const yearLabel = document.querySelector("#yearLabel");
 const marqueeTrack = document.querySelector("#marqueeTrack");
-const galleryItems = Array.isArray(window.galleryItems) ? window.galleryItems : [];
-const fillerTemplates = Array.isArray(window.fillerTemplates) ? window.fillerTemplates : [];
+const fillerTemplates = loadFillerTemplates();
+const products = loadProducts();
 const fillerTemplateAssets = window.fillerTemplateAssets || {};
 const preferredCategoryOrder = ["薔薇", "妮娜", "鍾馗", "黴醬", "歐妮亞", "其他", "未分類"];
 const fillerTemplateUrlCache = new Map();
 
 let activeCategory = "全部";
 let headlineIndex = 0;
+let boardItems = loadBoardItems();
+const galleryItems = [...loadGalleryItems()];
 const fillerState = {
   templateId: fillerTemplates[0]?.id || null,
   text: "",
@@ -185,6 +164,202 @@ const fillerState = {
   outputSize: 1080,
 };
 let fillerDragState = null;
+
+function normalizeBoardItems(items) {
+  if (!Array.isArray(items)) {
+    return defaultBoardItems;
+  }
+
+  const normalized = items
+    .map((item) => ({
+      type: String(item?.type || "").trim(),
+      title: String(item?.title || "").trim(),
+      date: String(item?.date || "").trim(),
+      description: String(item?.description || "").trim(),
+    }))
+    .filter((item) => item.title && item.description);
+
+  return normalized;
+}
+
+function loadBoardItems() {
+  try {
+    const stored = window.localStorage.getItem(BOARD_STORAGE_KEY);
+
+    if (!stored) {
+      return normalizeBoardItems(defaultBoardItems);
+    }
+
+    return normalizeBoardItems(JSON.parse(stored));
+  } catch (error) {
+    return normalizeBoardItems(defaultBoardItems);
+  }
+}
+
+function normalizeExtraGalleryItems(items) {
+  if (!Array.isArray(items)) {
+    return [];
+  }
+
+  return items
+    .map((item) => ({
+      title: String(item?.title || "").trim(),
+      category: String(item?.category || "未分類").trim() || "未分類",
+      year: String(item?.year || "自訂新增").trim() || "自訂新增",
+      description: String(item?.description || "").trim(),
+      imageUrl: normalizeEditableImageUrl(String(item?.imageUrl || "").trim()),
+      driveUrl: String(item?.driveUrl || "").trim(),
+    }))
+    .filter((item) => item.imageUrl && item.driveUrl);
+}
+
+function loadExtraGalleryItems() {
+  try {
+    const stored = window.localStorage.getItem(EXTRA_GALLERY_STORAGE_KEY);
+    return stored ? normalizeExtraGalleryItems(JSON.parse(stored)) : [];
+  } catch (error) {
+    return [];
+  }
+}
+
+function normalizeEditableImageUrl(url) {
+  if (!url) {
+    return "";
+  }
+
+  const trimmed = url.trim();
+  const driveMatch = trimmed.match(/drive\.google\.com\/file\/d\/([^/]+)/);
+
+  if (driveMatch) {
+    return `https://drive.google.com/uc?export=view&id=${driveMatch[1]}`;
+  }
+
+  return trimmed;
+}
+
+function createGalleryMatchKey(item) {
+  return String(item?.driveUrl || item?.imageUrl || item?.title || "")
+    .trim()
+    .toLowerCase();
+}
+
+function normalizeGalleryOverrides(items) {
+  if (!Array.isArray(items)) {
+    return [];
+  }
+
+  return items
+    .map((item) => ({
+      matchKey: String(item?.matchKey || "").trim().toLowerCase(),
+      title: String(item?.title || "").trim(),
+      category: String(item?.category || "未分類").trim() || "未分類",
+      year: String(item?.year || "Google Drive 同步").trim() || "Google Drive 同步",
+      description: String(item?.description || "").trim(),
+      imageUrl: normalizeEditableImageUrl(String(item?.imageUrl || "").trim()),
+      driveUrl: String(item?.driveUrl || "").trim(),
+    }))
+    .filter((item) => item.matchKey && item.imageUrl && item.driveUrl);
+}
+
+function loadGalleryOverrides() {
+  try {
+    const stored = window.localStorage.getItem(GALLERY_OVERRIDE_STORAGE_KEY);
+    return stored ? normalizeGalleryOverrides(JSON.parse(stored)) : [];
+  } catch (error) {
+    return [];
+  }
+}
+
+function loadGalleryItems() {
+  const overrides = new Map(loadGalleryOverrides().map((item) => [item.matchKey, item]));
+  const mergedDefaults = defaultGalleryItems.map((item) => {
+    const matchKey = createGalleryMatchKey(item);
+    return overrides.get(matchKey) || item;
+  });
+
+  return [...mergedDefaults, ...loadExtraGalleryItems()];
+}
+
+function normalizeProducts(items) {
+  if (!Array.isArray(items)) {
+    return defaultProducts;
+  }
+
+  return items
+    .map((item) => ({
+      name: String(item?.name || "").trim(),
+      status: String(item?.status || "").trim(),
+      price: String(item?.price || "").trim(),
+      description: String(item?.description || "").trim(),
+      imageUrl: normalizeEditableImageUrl(String(item?.imageUrl || "").trim()),
+      href: String(item?.href || "").trim(),
+    }))
+    .filter((item) => item.name && item.imageUrl && item.href);
+}
+
+function loadProducts() {
+  try {
+    const stored = window.localStorage.getItem(PRODUCT_STORAGE_KEY);
+    return stored ? normalizeProducts(JSON.parse(stored)) : normalizeProducts(defaultProducts);
+  } catch (error) {
+    return normalizeProducts(defaultProducts);
+  }
+}
+
+function getDefaultTemplateDefaults() {
+  return {
+    text: "想填的字\n放這裡",
+    imageX: 50,
+    imageY: 50,
+    imageScale: 100,
+    imageOutlineEnabled: true,
+    imageOutlineWidth: 12,
+    x: 50,
+    y: 28,
+    width: 42,
+    fontSize: 64,
+    lineHeight: 1.18,
+    fontWeight: 900,
+    fill: "#7c2d1c",
+    outlineEnabled: true,
+    outlineWidth: 9,
+    stroke: "rgba(255, 248, 241, 0.96)",
+    outputSize: 1080,
+  };
+}
+
+function normalizeFillerTemplates(items) {
+  if (!Array.isArray(items)) {
+    return defaultFillerTemplates;
+  }
+
+  return items
+    .map((item, index) => {
+      const fallbackDefaults = defaultFillerTemplates.find((template) => template.id === item?.id)?.defaults || getDefaultTemplateDefaults();
+      return {
+        id: String(item?.id || `custom-template-${index + 1}`).trim(),
+        name: String(item?.name || "").trim(),
+        imageUrl: normalizeEditableImageUrl(String(item?.imageUrl || "").trim()),
+        downloadName: String(item?.downloadName || item?.id || `template-${index + 1}`).trim(),
+        canvasWidth: Number(item?.canvasWidth) || 1080,
+        canvasHeight: Number(item?.canvasHeight) || 1080,
+        defaults: {
+          ...fallbackDefaults,
+          ...(item?.defaults || {}),
+        },
+      };
+    })
+    .filter((item) => item.id && item.name && item.imageUrl);
+}
+
+function loadFillerTemplates() {
+  try {
+    const stored = window.localStorage.getItem(FILLER_TEMPLATE_STORAGE_KEY);
+    return stored ? normalizeFillerTemplates(JSON.parse(stored)) : normalizeFillerTemplates(defaultFillerTemplates);
+  } catch (error) {
+    return normalizeFillerTemplates(defaultFillerTemplates);
+  }
+}
 
 function shuffled(items) {
   const clone = [...items];
@@ -867,7 +1042,8 @@ function renderBoard() {
     return;
   }
 
-  boardList.innerHTML = boardItems
+  boardList.innerHTML = boardItems.length > 0
+    ? boardItems
     .map(
       (item) => `
         <article class="board-card">
@@ -881,7 +1057,8 @@ function renderBoard() {
         </article>
       `,
     )
-    .join("");
+    .join("")
+    : `<p class="filler-empty">目前沒有公告。</p>`;
 }
 
 function renderProducts() {
@@ -889,7 +1066,8 @@ function renderProducts() {
     return;
   }
 
-  shopGrid.innerHTML = products
+  shopGrid.innerHTML = products.length > 0
+    ? products
     .map(
       (item) => `
         <a class="product-card product-card-link" href="${item.href}" target="_blank" rel="noreferrer">
@@ -907,7 +1085,8 @@ function renderProducts() {
         </a>
       `,
     )
-    .join("");
+    .join("")
+    : `<p class="filler-empty">目前沒有上架中的商品。</p>`;
 }
 
 function renderHero() {
@@ -937,6 +1116,15 @@ function renderHero() {
 
 function updateHeadline() {
   if (!headlineType || !headlineDate || !headlineBadge || !headlineTitle || !headlineText) {
+    return;
+  }
+
+  if (!boardItems.length) {
+    headlineType.textContent = "最新動態";
+    headlineDate.textContent = "--";
+    headlineBadge.textContent = "空白";
+    headlineTitle.textContent = "目前還沒有公告";
+    headlineText.textContent = "之後新增公告後，首頁這裡就會輪播顯示。";
     return;
   }
 

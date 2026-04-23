@@ -1,0 +1,8 @@
+name = "heshi-site-publisher"
+main = "src/index.js"
+compatibility_date = "2026-04-23"
+
+[vars]
+GITHUB_REPO = "pyh131313-art/red-stone-web"
+GITHUB_BRANCH = "main"
+ALLOWED_ORIGIN = "https://pyh131313-art.github.io"

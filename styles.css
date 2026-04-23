@@ -844,6 +844,186 @@ h2 {
   line-height: 1.7;
 }
 
+.editor-shell {
+  display: grid;
+  gap: 1rem;
+  padding: clamp(1.2rem, 3vw, 2rem);
+}
+
+.editor-shell.is-hidden {
+  display: none;
+}
+
+.editor-card,
+.editor-board-card {
+  padding: 1rem;
+  border-radius: var(--radius-lg);
+  background: var(--card-strong);
+  border: 1px solid var(--line);
+}
+
+.editor-login-card {
+  width: min(100%, 30rem);
+  justify-self: center;
+  display: grid;
+  gap: 1rem;
+}
+
+.editor-title {
+  font-size: clamp(1.8rem, 3vw, 3rem);
+  line-height: 1;
+}
+
+.editor-copy,
+.editor-note,
+.editor-status {
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.editor-password-input {
+  width: 100%;
+  min-height: 3rem;
+  padding: 0.7rem 0.9rem;
+  border-radius: 16px;
+  border: 1px solid rgba(32, 27, 24, 0.12);
+  background: rgba(255, 251, 246, 0.88);
+  color: var(--ink);
+  font-size: 1rem;
+}
+
+.editor-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.editor-board-card {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.editor-board-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.editor-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.editor-gallery-toolbar {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(12rem, 1fr);
+  gap: 1rem;
+  margin: 1rem 0 1.25rem;
+}
+
+.editor-publish-card {
+  margin-top: 1.2rem;
+  padding: 1.2rem;
+  border-radius: 28px;
+  border: 1px solid rgba(32, 27, 24, 0.08);
+  background: rgba(255, 251, 246, 0.74);
+}
+
+.editor-publish-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.editor-inline-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.editor-subheading {
+  margin-top: 1.2rem;
+}
+
+.editor-source-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2rem;
+  padding: 0.2rem 0.7rem;
+  border-radius: 999px;
+  background: rgba(223, 90, 42, 0.12);
+  color: var(--accent-deep);
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.editor-remove-button {
+  min-height: 2.4rem;
+}
+
+.editor-gallery-preview-wrap {
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at 20% 20%, rgba(223, 90, 42, 0.18), transparent 42%),
+    linear-gradient(180deg, rgba(255, 250, 244, 0.95), rgba(247, 239, 231, 0.95));
+  border: 1px solid rgba(32, 27, 24, 0.08);
+}
+
+.editor-gallery-preview {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.editor-empty-state {
+  grid-column: 1 / -1;
+  padding: 1.1rem 1.2rem;
+  border-radius: 22px;
+  border: 1px dashed rgba(32, 27, 24, 0.16);
+  color: var(--muted);
+  background: rgba(255, 251, 246, 0.65);
+}
+
+@media (max-width: 1024px) {
+  .editor-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .editor-gallery-toolbar {
+    grid-template-columns: 1fr;
+  }
+
+  .editor-publish-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .editor-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .editor-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .editor-board-head {
+    align-items: start;
+    gap: 0.75rem;
+  }
+
+  .editor-inline-actions {
+    flex-wrap: wrap;
+    justify-content: end;
+  }
+}
+
 .gallery-filters {
   display: flex;
   flex-wrap: wrap;

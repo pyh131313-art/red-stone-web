@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>赫石 | 編輯頁</title>
+    <meta name="description" content="赫石網站的私人編輯頁，可輸入密碼後編輯公告內容。" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Noto+Sans+TC:wght@400;500;700;900&display=swap"
+      rel="stylesheet"
+    />
+    <link id="siteFavicon" rel="icon" type="image/svg+xml" href="./assets/fillers/rose-bubble.svg" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="page-noise"></div>
+
+    <header class="site-header">
+      <a class="brand" href="./index.html">
+        <span class="brand-mark">赫</span>
+        <span class="brand-copy">
+          <strong>赫石</strong>
+          <small>edit page</small>
+        </span>
+      </a>
+
+      <nav class="site-nav" aria-label="主選單">
+        <a href="./index.html">回首頁</a>
+      </nav>
+    </header>
+
+    <main id="top">
+      <section class="section-block editor-shell" id="editorGate">
+        <div class="editor-card editor-login-card">
+          <p class="eyebrow">Private</p>
+          <h1 class="editor-title">私人編輯頁</h1>
+          <p class="editor-copy">輸入密碼後才會顯示編輯工具。</p>
+          <label class="filler-field">
+            <span>密碼</span>
+            <input class="editor-password-input" id="editorPasswordInput" type="password" placeholder="輸入密碼" />
+          </label>
+          <button class="button button-primary" id="editorLoginButton" type="button">進入編輯頁</button>
+          <p class="editor-status" id="editorLoginStatus"></p>
+        </div>
+      </section>
+
+      <section class="section-block editor-shell is-hidden" id="editorPanel">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Editor</p>
+            <h2>公告編輯</h2>
+          </div>
+          <div class="editor-actions">
+            <a class="button button-ghost" href="./index.html" target="_blank" rel="noreferrer">打開首頁</a>
+            <button class="button button-ghost" id="editorAddBoardButton" type="button">新增公告</button>
+            <button class="button button-ghost" id="editorResetButton" type="button">重設成預設</button>
+            <button class="button button-ghost" id="editorLogoutButton" type="button">登出</button>
+            <button class="button button-primary" id="editorSaveButton" type="button">儲存變更</button>
+          </div>
+        </div>
+
+        <div class="editor-grid" id="editorBoardGrid"></div>
+        <div class="editor-publish-card">
+          <div class="section-heading editor-subheading">
+            <div>
+              <p class="eyebrow">Publish</p>
+              <h2>發布到 GitHub</h2>
+            </div>
+          </div>
+          <div class="editor-publish-grid">
+            <label class="filler-field">
+              <span>Worker 網址</span>
+              <input id="editorWorkerUrlInput" type="text" placeholder="https://your-worker.workers.dev" />
+            </label>
+            <label class="filler-field">
+              <span>發布密碼</span>
+              <input id="editorPublishPasswordInput" type="password" placeholder="Cloudflare Worker 密碼" />
+            </label>
+          </div>
+          <div class="editor-actions">
+            <button class="button button-primary" id="editorPublishButton" type="button">發布到 GitHub</button>
+          </div>
+          <p class="editor-note">這個按鈕會把目前公告、商品和 SVG 模板送到 Cloudflare Worker，再由 Worker 安全寫回 GitHub repo。</p>
+        </div>
+        <div class="section-heading editor-subheading">
+          <div>
+            <p class="eyebrow">Gallery</p>
+            <h2>圖片編輯</h2>
+          </div>
+          <div class="editor-actions">
+            <button class="button button-ghost" id="editorAddGalleryButton" type="button">新增圖片欄位</button>
+          </div>
+        </div>
+        <div class="editor-gallery-toolbar">
+          <label class="filler-field">
+            <span>搜尋圖片</span>
+            <input id="editorGallerySearchInput" type="text" placeholder="輸入標題、分類或說明" />
+          </label>
+          <label class="filler-field">
+            <span>分類篩選</span>
+            <select id="editorGalleryCategoryFilter">
+              <option value="全部">全部分類</option>
+            </select>
+          </label>
+        </div>
+        <div class="editor-grid" id="editorGalleryGrid"></div>
+        <div class="section-heading editor-subheading">
+          <div>
+            <p class="eyebrow">Templates</p>
+            <h2>SVG 模板編輯</h2>
+          </div>
+          <div class="editor-actions">
+            <button class="button button-ghost" id="editorAddTemplateButton" type="button">新增 SVG</button>
+          </div>
+        </div>
+        <div class="editor-grid" id="editorTemplateGrid"></div>
+        <div class="section-heading editor-subheading">
+          <div>
+            <p class="eyebrow">Products</p>
+            <h2>商品編輯</h2>
+          </div>
+          <div class="editor-actions">
+            <button class="button button-ghost" id="editorAddProductButton" type="button">新增商品</button>
+          </div>
+        </div>
+        <div class="editor-grid" id="editorProductGrid"></div>
+        <p class="editor-note">這個編輯頁目前會把公告、圖庫、SVG 模板和商品內容存到你這台瀏覽器。儲存後重新整理首頁或填字器，就會看到新的內容。圖片網址如果貼 Google Drive 單檔連結，系統會自動轉成可顯示縮圖的網址。</p>
+        <p class="editor-status" id="editorSaveStatus"></p>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <p>© <span id="yearLabel"></span> 赫石. All rights reserved.</p>
+      <a href="#top">回到上方</a>
+    </footer>
+
+    <script src="./data/gallery-data.js"></script>
+    <script src="./data/site-content.js"></script>
+    <script src="./data/filler-templates.js"></script>
+    <script src="./edit.js"></script>
+  </body>
+</html>
