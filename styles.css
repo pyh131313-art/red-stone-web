@@ -881,6 +881,30 @@ h2 {
   line-height: 1.6;
 }
 
+.editor-status {
+  margin-top: 0.8rem;
+  padding: 0.85rem 1rem;
+  border-radius: 18px;
+  border: 1px solid rgba(32, 27, 24, 0.08);
+  background: rgba(255, 251, 246, 0.74);
+}
+
+.editor-status[data-tone="success"] {
+  color: #1f6b48;
+  border-color: rgba(31, 107, 72, 0.18);
+  background: rgba(230, 247, 238, 0.9);
+}
+
+.editor-status[data-tone="error"] {
+  color: #9f2f2f;
+  border-color: rgba(159, 47, 47, 0.18);
+  background: rgba(255, 238, 238, 0.92);
+}
+
+.editor-status[data-tone="info"] {
+  color: var(--muted);
+}
+
 .editor-password-input {
   width: 100%;
   min-height: 3rem;

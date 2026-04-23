@@ -51,6 +51,19 @@ let boardDraftItems = [];
 let templateDraftItems = [];
 let productDraftItems = [];
 
+function setEditorStatus(message, tone = "info") {
+  if (!editorSaveStatus) {
+    return;
+  }
+
+  editorSaveStatus.textContent = message;
+  editorSaveStatus.dataset.tone = tone;
+
+  if (message) {
+    editorSaveStatus.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }
+}
+
 function normalizeBoardItems(items) {
   if (!Array.isArray(items)) {
     return defaultBoardItems;
@@ -379,7 +392,7 @@ function renderBoardEditor() {
       boardDraftItems = collectBoardDraftItems();
       boardDraftItems.splice(Number(button.dataset.removeBoard), 1);
       renderBoardEditor();
-      editorSaveStatus.textContent = "已移除公告，記得按一次儲存確認。";
+      setEditorStatus("已移除公告，記得按一次儲存確認。", "info");
     });
   });
 }
@@ -446,7 +459,7 @@ function renderGalleryEditor(items = loadEditableGalleryItems()) {
       const matchKey = card?.dataset.galleryMatchKey || "";
       galleryDraftItems = galleryDraftItems.filter((item) => item.matchKey !== matchKey);
       renderGalleryEditor(galleryDraftItems);
-      editorSaveStatus.textContent = "已移除圖片項目，記得按一次儲存確認。";
+      setEditorStatus("已移除圖片項目，記得按一次儲存確認。", "info");
     });
   });
 }
@@ -494,7 +507,7 @@ function renderTemplateEditor() {
       templateDraftItems = collectTemplateDraftItems();
       templateDraftItems.splice(Number(button.dataset.removeTemplate), 1);
       renderTemplateEditor();
-      editorSaveStatus.textContent = "已移除 SVG 模板，記得按一次儲存確認。";
+      setEditorStatus("已移除 SVG 模板，記得按一次儲存確認。", "info");
     });
   });
 
@@ -508,7 +521,7 @@ function renderTemplateEditor() {
       }
 
       if (!file.name.toLowerCase().endsWith(".svg") && file.type !== "image/svg+xml") {
-        editorSaveStatus.textContent = "請上傳 SVG 檔。";
+        setEditorStatus("請上傳 SVG 檔。", "error");
         input.value = "";
         return;
       }
@@ -531,9 +544,9 @@ function renderTemplateEditor() {
         }
 
         renderTemplateEditor();
-        editorSaveStatus.textContent = `已載入 SVG：${file.name}，記得按一次儲存確認。`;
+        setEditorStatus(`已載入 SVG：${file.name}，記得按一次儲存確認。`, "success");
       } catch (error) {
-        editorSaveStatus.textContent = "SVG 讀取失敗，請再試一次。";
+        setEditorStatus("SVG 讀取失敗，請再試一次。", "error");
       } finally {
         input.value = "";
       }
@@ -592,7 +605,7 @@ function renderProductEditor() {
       productDraftItems = collectProductDraftItems();
       productDraftItems.splice(Number(button.dataset.removeProduct), 1);
       renderProductEditor();
-      editorSaveStatus.textContent = "已移除商品，記得按一次儲存確認。";
+      setEditorStatus("已移除商品，記得按一次儲存確認。", "info");
     });
   });
 }
@@ -758,24 +771,31 @@ async function publishToWorker() {
   const publishPassword = editorPublishPasswordInput?.value?.trim() || "";
 
   if (!workerUrl) {
-    editorSaveStatus.textContent = "請先填入 Worker 網址。";
+    setEditorStatus("請先填入 Worker 網址。", "error");
     return;
   }
 
   if (!publishPassword) {
-    editorSaveStatus.textContent = "請先填入發布密碼。";
+    setEditorStatus("請先填入發布密碼。", "error");
     return;
   }
 
   saveWorkerUrl(workerUrl);
 
   const boardItems = collectBoardItems();
+  const { overrides, customItems } = collectGalleryState();
   const products = collectProductDraftItems().filter((item) => item.name && item.imageUrl && item.href);
   const fillerTemplates = collectTemplateDraftItems().filter((item) => item.name && item.imageUrl);
   const galleryItems = buildPublishableGalleryItems();
 
+  saveBoardItems(boardItems);
+  saveGalleryOverrides(overrides);
+  saveGalleryItems(customItems);
+  saveFillerTemplates(collectTemplateDraftItems());
+  saveProducts(collectProductDraftItems());
+
   editorPublishButton.disabled = true;
-  editorSaveStatus.textContent = "發布中，正在送到 Cloudflare Worker...";
+  setEditorStatus("發布中，正在送到 Cloudflare Worker...", "info");
 
   try {
     const response = await fetch(`${workerUrl.replace(/\/$/, "")}/publish`, {
@@ -800,9 +820,9 @@ async function publishToWorker() {
     }
 
     editorPublishPasswordInput.value = "";
-    editorSaveStatus.textContent = "已送出到 GitHub，等 GitHub Pages 更新後，公開站就會看到。";
+    setEditorStatus("發布成功，等 GitHub Pages 更新後，公開站就會看到。", "success");
   } catch (error) {
-    editorSaveStatus.textContent = `發布失敗：${error.message}`;
+    setEditorStatus(`發布失敗：${error.message}`, "error");
   } finally {
     editorPublishButton.disabled = false;
   }
@@ -909,7 +929,7 @@ function init() {
     saveGalleryItems(customItems);
     saveFillerTemplates(collectTemplateDraftItems());
     saveProducts(collectProductDraftItems());
-    editorSaveStatus.textContent = "已儲存公告、圖片、SVG 與商品，重新整理首頁或填字器就會看到。";
+    setEditorStatus("儲存成功，已寫入這台裝置的編輯內容。", "success");
   });
 
   editorResetButton?.addEventListener("click", () => {
@@ -926,12 +946,12 @@ function init() {
     productDraftItems = loadProducts();
     renderTemplateEditor();
     renderProductEditor();
-    editorSaveStatus.textContent = "已重設成預設公告、圖庫、SVG 模板與商品。";
+    setEditorStatus("已重設成預設公告、圖庫、SVG 模板與商品。", "info");
   });
 
   editorLogoutButton?.addEventListener("click", () => {
     window.sessionStorage.removeItem(EDIT_AUTH_KEY);
-    editorSaveStatus.textContent = "";
+    setEditorStatus("", "info");
     editorLoginStatus.textContent = "";
     showGate();
   });
@@ -950,7 +970,7 @@ function init() {
     });
     galleryDraftItems = nextItems;
     renderGalleryEditor(nextItems);
-    editorSaveStatus.textContent = "已新增圖片欄位，填好後按儲存。";
+    setEditorStatus("已新增圖片欄位，填好後按儲存。", "info");
   });
 
   editorAddBoardButton?.addEventListener("click", () => {
@@ -962,7 +982,7 @@ function init() {
       description: "",
     });
     renderBoardEditor();
-    editorSaveStatus.textContent = "已新增公告欄位，填好後按儲存。";
+    setEditorStatus("已新增公告欄位，填好後按儲存。", "info");
   });
 
   editorAddTemplateButton?.addEventListener("click", () => {
@@ -978,7 +998,7 @@ function init() {
       defaults: getDefaultTemplateDefaults(),
     });
     renderTemplateEditor();
-    editorSaveStatus.textContent = "已新增 SVG 欄位，填好後按儲存。";
+    setEditorStatus("已新增 SVG 欄位，填好後按儲存。", "info");
   });
 
   editorAddProductButton?.addEventListener("click", () => {
@@ -992,7 +1012,7 @@ function init() {
       href: "",
     });
     renderProductEditor();
-    editorSaveStatus.textContent = "已新增商品欄位，填好後按儲存。";
+    setEditorStatus("已新增商品欄位，填好後按儲存。", "info");
   });
 
   editorGallerySearchInput?.addEventListener("input", () => {
