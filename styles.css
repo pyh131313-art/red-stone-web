@@ -1082,6 +1082,15 @@ h2 {
   display: block;
 }
 
+.editor-upload-field input[type="file"] {
+  width: 100%;
+  padding: 0.75rem;
+  border-radius: 16px;
+  border: 1px dashed rgba(32, 27, 24, 0.18);
+  background: rgba(255, 251, 246, 0.76);
+  color: var(--muted);
+}
+
 .editor-empty-state {
   grid-column: 1 / -1;
   padding: 1.1rem 1.2rem;

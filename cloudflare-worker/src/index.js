@@ -71,9 +71,11 @@ async function handlePublish(request, env, corsHeaders) {
   const boardItems = normalizeBoardItems(payload?.boardItems);
   const products = normalizeProducts(payload?.products);
   const fillerTemplates = normalizeFillerTemplates(payload?.fillerTemplates);
-  const galleryItems = normalizeGalleryItems(payload?.galleryItems);
+  const galleryUploadResult = prepareGalleryUploads(normalizeGalleryItems(payload?.galleryItems));
+  const galleryItems = galleryUploadResult.items;
 
   const files = [
+    ...galleryUploadResult.files,
     {
       path: "data/site-content.js",
       content: renderSiteContentFile({ boardItems, products }),
@@ -137,7 +139,8 @@ async function updateGitHubFile(env, file) {
     "User-Agent": "heshi-site-publisher",
   };
 
-  const fileUrl = `https://api.github.com/repos/${env.GITHUB_REPO}/contents/${file.path}?ref=${encodeURIComponent(branch)}`;
+  const encodedPath = encodeGitHubPath(file.path);
+  const fileUrl = `https://api.github.com/repos/${env.GITHUB_REPO}/contents/${encodedPath}?ref=${encodeURIComponent(branch)}`;
   const currentResponse = await fetch(fileUrl, { headers });
   let currentFile = null;
 
@@ -149,12 +152,12 @@ async function updateGitHubFile(env, file) {
     currentFile = await currentResponse.json();
   }
 
-  const updateResponse = await fetch(`https://api.github.com/repos/${env.GITHUB_REPO}/contents/${file.path}`, {
+  const updateResponse = await fetch(`https://api.github.com/repos/${env.GITHUB_REPO}/contents/${encodedPath}`, {
     method: "PUT",
     headers,
     body: JSON.stringify({
       message: file.message,
-      content: toBase64(file.content),
+      content: file.contentBase64 || toBase64(file.content),
       branch,
       ...(currentFile?.sha ? { sha: currentFile.sha } : {}),
     }),
@@ -183,6 +186,39 @@ function renderFillerTemplatesFile(items) {
 
 function renderGalleryDataFile(items) {
   return `window.galleryItems = ${JSON.stringify(items, null, 2)};\n`;
+}
+
+function prepareGalleryUploads(items) {
+  const files = [];
+  const nextItems = items.map((item, index) => {
+    const asset = parseImageDataUrl(item.imageUrl);
+
+    if (!asset) {
+      return item;
+    }
+
+    const hash = hashString(asset.base64).slice(0, 10);
+    const extension = mimeToExtension(asset.mimeType);
+    const path = `assets/gallery/uploads/gallery-${index + 1}-${hash}.${extension}`;
+    const publicPath = `./${path}`;
+
+    files.push({
+      path,
+      contentBase64: asset.base64,
+      message: "Upload gallery image from editor",
+    });
+
+    return {
+      ...item,
+      imageUrl: publicPath,
+      driveUrl: item.driveUrl && !item.driveUrl.startsWith("data:image/") ? item.driveUrl : publicPath,
+    };
+  });
+
+  return {
+    items: nextItems,
+    files,
+  };
 }
 
 function normalizeBoardItems(items) {
@@ -275,6 +311,45 @@ function normalizeFillerTemplates(items) {
       },
     }))
     .filter((item) => item.id && item.name && item.imageUrl);
+}
+
+function parseImageDataUrl(value) {
+  const match = String(value || "").match(/^data:(image\/(?:png|jpeg|jpg|gif|webp));base64,([a-z0-9+/=]+)$/i);
+
+  if (!match) {
+    return null;
+  }
+
+  return {
+    mimeType: match[1].toLowerCase().replace("image/jpg", "image/jpeg"),
+    base64: match[2],
+  };
+}
+
+function mimeToExtension(mimeType) {
+  const extensions = {
+    "image/png": "png",
+    "image/jpeg": "jpg",
+    "image/gif": "gif",
+    "image/webp": "webp",
+  };
+
+  return extensions[mimeType] || "png";
+}
+
+function hashString(value) {
+  let hash = 2166136261;
+
+  for (let index = 0; index < value.length; index += 1) {
+    hash ^= value.charCodeAt(index);
+    hash = Math.imul(hash, 16777619);
+  }
+
+  return (hash >>> 0).toString(16).padStart(8, "0");
+}
+
+function encodeGitHubPath(path) {
+  return path.split("/").map((segment) => encodeURIComponent(segment)).join("/");
 }
 
 function toBase64(value) {

@@ -137,7 +137,7 @@ function normalizeGalleryItems(items) {
       year: String(item?.year || "自訂新增").trim() || "自訂新增",
       description: String(item?.description || "").trim(),
       imageUrl: normalizeEditableImageUrl(String(item?.imageUrl || "").trim()),
-      driveUrl: String(item?.driveUrl || "").trim(),
+      driveUrl: String(item?.driveUrl || item?.imageUrl || "").trim(),
     }))
     .filter((item) => item.imageUrl && item.driveUrl);
 }
@@ -174,7 +174,7 @@ function normalizeGalleryOverrides(items) {
       year: String(item?.year || "Google Drive 同步").trim() || "Google Drive 同步",
       description: String(item?.description || "").trim(),
       imageUrl: normalizeEditableImageUrl(String(item?.imageUrl || "").trim()),
-      driveUrl: String(item?.driveUrl || "").trim(),
+      driveUrl: String(item?.driveUrl || item?.imageUrl || "").trim(),
     }))
     .filter((item) => item.matchKey && item.imageUrl && item.driveUrl);
 }
@@ -448,6 +448,10 @@ function renderGalleryEditor(items = loadEditableGalleryItems()) {
             <span>圖片網址</span>
             <input type="text" data-field="imageUrl" value="${escapeHtml(item.imageUrl)}" />
           </label>
+          <label class="filler-field editor-upload-field">
+            <span>上傳圖片</span>
+            <input type="file" accept="image/png,image/jpeg,image/gif,image/webp" data-upload-gallery="${escapeHtml(item.matchKey || "")}" />
+          </label>
           <label class="filler-field">
             <span>點擊連結</span>
             <input type="text" data-field="driveUrl" value="${escapeHtml(item.driveUrl)}" />
@@ -476,6 +480,54 @@ function renderGalleryEditor(items = loadEditableGalleryItems()) {
       galleryDraftItems = galleryDraftItems.filter((item) => item.matchKey !== matchKey);
       renderGalleryEditor(galleryDraftItems);
       setEditorStatus("已移除圖片項目，記得按一次儲存確認。", "info");
+    });
+  });
+
+  editorGalleryGrid.querySelectorAll("[data-upload-gallery]").forEach((input) => {
+    input.addEventListener("change", async () => {
+      const file = input.files?.[0];
+      const matchKey = input.dataset.uploadGallery || "";
+
+      if (!file) {
+        return;
+      }
+
+      if (!file.type.startsWith("image/")) {
+        setEditorStatus("請上傳圖片檔。", "error");
+        input.value = "";
+        return;
+      }
+
+      if (file.size > 8 * 1024 * 1024) {
+        setEditorStatus("圖片超過 8MB，請先壓縮後再上傳。", "error");
+        input.value = "";
+        return;
+      }
+
+      try {
+        const uploadedImageUrl = await readImageFileAsDataUrl(file);
+        collectGalleryDraftItems();
+        const targetIndex = galleryDraftItems.findIndex((item) => item.matchKey === matchKey);
+
+        if (targetIndex >= 0) {
+          const nextItem = {
+            ...galleryDraftItems[targetIndex],
+            imageUrl: uploadedImageUrl,
+            driveUrl: uploadedImageUrl,
+          };
+
+          if (!nextItem.title) {
+            nextItem.title = file.name.replace(/\.[^.]+$/i, "");
+          }
+
+          galleryDraftItems[targetIndex] = nextItem;
+        }
+
+        renderGalleryEditor(galleryDraftItems);
+        setEditorStatus(`已載入圖片：${file.name}，記得按一次儲存確認。`, "success");
+      } catch (error) {
+        setEditorStatus("圖片讀取失敗，請再試一次。", "error");
+      }
     });
   });
 }
@@ -710,7 +762,7 @@ function collectGalleryDraftItems() {
       year: read("year") || (card.dataset.gallerySource === "default" ? "Google Drive 同步" : "自訂新增"),
       description: read("description"),
       imageUrl: read("imageUrl"),
-      driveUrl: read("driveUrl"),
+      driveUrl: read("driveUrl") || read("imageUrl"),
     };
 
     return [item.matchKey, item];
@@ -861,6 +913,16 @@ function readSvgFileAsDataUrl(file) {
 
     reader.onerror = () => reject(reader.error || new Error("read failed"));
     reader.readAsText(file);
+  });
+}
+
+function readImageFileAsDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+
+    reader.onload = () => resolve(String(reader.result || ""));
+    reader.onerror = () => reject(reader.error || new Error("read failed"));
+    reader.readAsDataURL(file);
   });
 }
 
