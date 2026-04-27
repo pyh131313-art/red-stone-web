@@ -1238,5 +1238,13 @@ window.galleryItems = [
     "description": "來自「薔薇」雲端資料夾的作品圖。",
     "imageUrl": "./assets/gallery/synced/薔薇-img-8006-e782696e.gif",
     "driveUrl": "https://drive.google.com/file/d/1Cm5o9ATzZ0iORkhV-5yFvt_6SQOvAUfH/view"
+  },
+  {
+    "title": "沙壁",
+    "category": "黴醬",
+    "year": "自訂新增",
+    "description": "",
+    "imageUrl": "https://drive.google.com/file/d/1jv4u_ZJoqXejmhc2pVuHvXdgvMDF5gNO/view?usp=share_link",
+    "driveUrl": "https://drive.google.com/file/d/1jv4u_ZJoqXejmhc2pVuHvXdgvMDF5gNO/view?usp=share_link"
   }
 ];
