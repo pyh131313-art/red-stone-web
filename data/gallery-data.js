@@ -1242,9 +1242,9 @@ window.galleryItems = [
   {
     "title": "沙壁",
     "category": "黴醬",
-    "year": "自訂新增",
+    "year": "Google Drive 同步",
     "description": "",
-    "imageUrl": "https://drive.google.com/file/d/1jv4u_ZJoqXejmhc2pVuHvXdgvMDF5gNO/view?usp=share_link",
-    "driveUrl": "https://drive.google.com/file/d/1jv4u_ZJoqXejmhc2pVuHvXdgvMDF5gNO/view?usp=share_link"
+    "imageUrl": "./assets/gallery/uploads/gallery-156-d99a323a.png",
+    "driveUrl": "./assets/gallery/uploads/gallery-156-d99a323a.png"
   }
 ];
