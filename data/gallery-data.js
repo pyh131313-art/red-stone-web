@@ -1245,6 +1245,6 @@ window.galleryItems = [
     "year": "Google Drive 同步",
     "description": "",
     "imageUrl": "./assets/gallery/uploads/gallery-156-d99a323a.png",
-    "driveUrl": "./assets/gallery/uploads/gallery-156-d99a323a.png"
+    "driveUrl": "https://drive.google.com/file/d/1jv4u_ZJoqXejmhc2pVuHvXdgvMDF5gNO/view?usp=drivesdk"
   }
 ];
