@@ -1246,5 +1246,13 @@ window.galleryItems = [
     "description": "",
     "imageUrl": "./assets/gallery/uploads/gallery-156-d99a323a.png",
     "driveUrl": "https://drive.google.com/file/d/1jv4u_ZJoqXejmhc2pVuHvXdgvMDF5gNO/view?usp=drivesdk"
+  },
+  {
+    "title": "彈塗魚",
+    "category": "薔薇",
+    "year": "自訂新增",
+    "description": "",
+    "imageUrl": "./assets/gallery/uploads/gallery-157-f3bf5bee.gif",
+    "driveUrl": "https://drive.google.com/file/d/1re-7eFu49BNdOk9M2aevse5UElr1b6IN/view?usp=share_link"
   }
 ];
